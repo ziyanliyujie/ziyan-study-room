@@ -1,5 +1,5 @@
 // 子言的学习屋 - Service Worker (PWA 离线缓存)
-const CACHE_NAME = 'ziyan-study-room-v1';
+const CACHE_NAME = 'ziyan-study-room-v2';
 const ASSETS = [
   './',
   './index.html',
