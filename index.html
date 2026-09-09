@@ -222,6 +222,24 @@
     .collapse-body{max-height:0;overflow:hidden;transition:max-height .3s ease-out}
     .collapse-body.open{max-height:2000px;transition:max-height .5s ease-in}
 
+    /* ===== 快捷入口 ===== */
+    .quick-entries{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+    .quick-entry{background:var(--bg2);border:1px solid var(--rule);border-radius:12px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .2s;text-align:center}
+    .quick-entry:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+    .quick-entry:active{transform:translateY(0)}
+    .qe-icon{font-size:24px}
+    .qe-text{font-size:12px;font-weight:600;color:var(--ink2)}
+    .qe-arrow{display:none}
+
+    /* ===== 时间线弹窗 ===== */
+    .timeline-popup{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:200;transform:translateY(100%);transition:transform .3s ease-out;display:flex;flex-direction:column}
+    .timeline-popup.show{transform:translateY(0)}
+    .timeline-popup-header{padding:16px 20px;background:var(--bg2);border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+    .timeline-popup-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+    .timeline-popup-close{width:36px;height:36px;border:none;background:var(--bg3);border-radius:10px;font-size:18px;color:var(--ink2);cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .timeline-popup-body{flex:1;overflow-y:auto;padding:20px;padding-bottom:40px}
+    .timeline-popup-body .timeline-add-btn{margin-top:8px}
+
     /* ===== 图表 ===== */
     #chart-weekly{width:100%;height:240px}
 
@@ -452,6 +470,25 @@
           <button class="checkin-btn-big" id="home-checkin-btn">今日打卡</button>
         </div>
 
+        <!-- 快捷入口 -->
+        <div class="quick-entries">
+          <div class="quick-entry" id="open-timeline-popup">
+            <span class="qe-icon">⏱️</span>
+            <span class="qe-text">考研时间线</span>
+            <span class="qe-arrow">›</span>
+          </div>
+          <div class="quick-entry" onclick="document.querySelector('.tab-item[data-tab=&quot;plan&quot;]').click()">
+            <span class="qe-icon">📅</span>
+            <span class="qe-text">学习计划</span>
+            <span class="qe-arrow">›</span>
+          </div>
+          <div class="quick-entry" onclick="document.querySelector('.tab-item[data-tab=&quot;data&quot;]').click()">
+            <span class="qe-icon">📊</span>
+            <span class="qe-text">数据统计</span>
+            <span class="qe-arrow">›</span>
+          </div>
+        </div>
+
         <!-- 今日状态 -->
         <div class="card">
           <div class="card-title"><span>😊 今日状态</span></div>
@@ -609,32 +646,42 @@
           <div class="grid-2" id="subject-grid-data" style="gap:10px;"></div>
         </div>
 
-        <!-- 考研时间线 -->
+        <!-- 考研时间线（可折叠） -->
         <div class="card">
-          <div class="card-title"><span>⏱️ 考研时间线</span><span class="tag" id="timeline-tag">10 个节点</span></div>
-          <button class="timeline-toggle-btn" id="timeline-toggle">+ 添加自定义时间节点</button>
-          <div class="timeline-add-form" id="timeline-add-form">
-            <div class="timeline-add-row">
-              <input type="text" id="timeline-title" placeholder="事件名称">
-              <input type="date" id="timeline-date">
-            </div>
-            <div class="timeline-add-row">
-              <input type="text" id="timeline-desc" placeholder="描述（可选）">
-              <select id="timeline-type">
-                <option value="custom">自定义</option>
-                <option value="official">官方节点</option>
-                <option value="exam">考试相关</option>
-              </select>
-            </div>
-            <button class="timeline-add-btn" id="timeline-add-btn">添加节点</button>
+          <div class="card-title collapse-header" id="data-timeline-toggle">
+            <span>⏱️ 考研时间线</span>
+            <span style="display:flex;align-items:center;gap:8px;">
+              <span class="tag" id="timeline-tag">10 个节点</span>
+              <span class="collapse-icon" id="data-timeline-icon">▼</span>
+            </span>
           </div>
-          <div id="timeline-upcoming-section">
-            <div class="timeline-section-title">📌 即将到来</div>
-            <div class="timeline" id="timeline-upcoming"></div>
-          </div>
-          <div id="timeline-past-section" style="display:none">
-            <div class="timeline-section-title">✅ 已过节点</div>
-            <div class="timeline" id="timeline-past"></div>
+          <div class="collapse-body" id="data-timeline-body">
+            <div style="padding-top:4px;">
+              <button class="timeline-toggle-btn" id="timeline-toggle">+ 添加自定义时间节点</button>
+              <div class="timeline-add-form" id="timeline-add-form">
+                <div class="timeline-add-row">
+                  <input type="text" id="timeline-title" placeholder="事件名称">
+                  <input type="date" id="timeline-date">
+                </div>
+                <div class="timeline-add-row">
+                  <input type="text" id="timeline-desc" placeholder="描述（可选）">
+                  <select id="timeline-type">
+                    <option value="custom">自定义</option>
+                    <option value="official">官方节点</option>
+                    <option value="exam">考试相关</option>
+                  </select>
+                </div>
+                <button class="timeline-add-btn" id="timeline-add-btn">添加节点</button>
+              </div>
+              <div id="timeline-upcoming-section">
+                <div class="timeline-section-title">📌 即将到来</div>
+                <div class="timeline" id="timeline-upcoming"></div>
+              </div>
+              <div id="timeline-past-section" style="display:none">
+                <div class="timeline-section-title">✅ 已过节点</div>
+                <div class="timeline" id="timeline-past"></div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -799,6 +846,40 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- 时间线弹窗 -->
+  <div class="timeline-popup" id="timeline-popup">
+    <div class="timeline-popup-header">
+      <div class="timeline-popup-title">⏱️ 考研时间线</div>
+      <button class="timeline-popup-close" id="timeline-popup-close">✕</button>
+    </div>
+    <div class="timeline-popup-body">
+      <button class="timeline-toggle-btn" id="popup-timeline-toggle">+ 添加自定义时间节点</button>
+      <div class="timeline-add-form" id="popup-timeline-add-form">
+        <div class="timeline-add-row">
+          <input type="text" id="popup-timeline-title" placeholder="事件名称">
+          <input type="date" id="popup-timeline-date">
+        </div>
+        <div class="timeline-add-row">
+          <input type="text" id="popup-timeline-desc" placeholder="描述（可选）">
+          <select id="popup-timeline-type">
+            <option value="custom">自定义</option>
+            <option value="official">官方节点</option>
+            <option value="exam">考试相关</option>
+          </select>
+        </div>
+        <button class="timeline-add-btn" id="popup-timeline-add-btn">添加节点</button>
+      </div>
+      <div id="popup-timeline-upcoming-section">
+        <div class="timeline-section-title">📌 即将到来</div>
+        <div class="timeline" id="popup-timeline-upcoming"></div>
+      </div>
+      <div id="popup-timeline-past-section" style="display:none">
+        <div class="timeline-section-title">✅ 已过节点</div>
+        <div class="timeline" id="popup-timeline-past"></div>
+      </div>
     </div>
   </div>
 
@@ -1744,7 +1825,7 @@
     var weekNames = ['周日','周一','周二','周三','周四','周五','周六'];
     return (d.getMonth()+1)+'月'+d.getDate()+'日 '+weekNames[d.getDay()];
   }
-  function renderTimeline() {
+  function buildTimelineHtml() {
     var items = state.timeline.slice().sort(function(a,b){ return new Date(a.date) - new Date(b.date); });
     var today = new Date(); today.setHours(0,0,0,0);
     var upcoming = [], past = [];
@@ -1783,16 +1864,32 @@
         + '</div>';
     }
 
-    document.getElementById('timeline-upcoming').innerHTML = upcoming.length > 0
-      ? upcoming.map(timelineHtml).join('')
-      : '<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">暂无即将到来的节点</p>';
-    document.getElementById('timeline-past').innerHTML = past.length > 0
-      ? past.map(timelineHtml).join('')
-      : '';
-
-    document.getElementById('timeline-past-section').style.display = past.length > 0 ? 'block' : 'none';
-    document.getElementById('timeline-tag').textContent = items.length + ' 个节点';
+    return {
+      upcomingHtml: upcoming.length > 0 ? upcoming.map(timelineHtml).join('') : '<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">暂无即将到来的节点</p>',
+      pastHtml: past.length > 0 ? past.map(timelineHtml).join('') : '',
+      pastVisible: past.length > 0,
+      totalCount: items.length
+    };
   }
+  function renderTimeline() {
+    var data = buildTimelineHtml();
+    // 数据页
+    document.getElementById('timeline-upcoming').innerHTML = data.upcomingHtml;
+    document.getElementById('timeline-past').innerHTML = data.pastHtml;
+    document.getElementById('timeline-past-section').style.display = data.pastVisible ? 'block' : 'none';
+    document.getElementById('timeline-tag').textContent = data.totalCount + ' 个节点';
+    // 弹窗
+    document.getElementById('popup-timeline-upcoming').innerHTML = data.upcomingHtml;
+    document.getElementById('popup-timeline-past').innerHTML = data.pastHtml;
+    document.getElementById('popup-timeline-past-section').style.display = data.pastVisible ? 'block' : 'none';
+  }
+  // 数据页时间线折叠
+  document.getElementById('data-timeline-toggle').addEventListener('click', function() {
+    var body = document.getElementById('data-timeline-body');
+    var icon = document.getElementById('data-timeline-icon');
+    body.classList.toggle('open');
+    icon.classList.toggle('open');
+  });
   document.getElementById('timeline-toggle').addEventListener('click', function() {
     var form = document.getElementById('timeline-add-form');
     form.classList.toggle('show');
@@ -1811,6 +1908,33 @@
     document.getElementById('timeline-title').value = '';
     document.getElementById('timeline-date').value = '';
     document.getElementById('timeline-desc').value = '';
+    toast('时间节点已添加');
+  });
+  // 弹窗时间线
+  document.getElementById('open-timeline-popup').addEventListener('click', function() {
+    document.getElementById('timeline-popup').classList.add('show');
+  });
+  document.getElementById('timeline-popup-close').addEventListener('click', function() {
+    document.getElementById('timeline-popup').classList.remove('show');
+  });
+  document.getElementById('popup-timeline-toggle').addEventListener('click', function() {
+    var form = document.getElementById('popup-timeline-add-form');
+    form.classList.toggle('show');
+    this.textContent = form.classList.contains('show') ? '收起添加表单' : '+ 添加自定义时间节点';
+  });
+  document.getElementById('popup-timeline-add-btn').addEventListener('click', function() {
+    var title = document.getElementById('popup-timeline-title').value.trim();
+    var date = document.getElementById('popup-timeline-date').value;
+    var desc = document.getElementById('popup-timeline-desc').value.trim();
+    var type = document.getElementById('popup-timeline-type').value;
+    if (!title || !date) { toast('请填写事件名称和日期'); return; }
+    var newId = state.timeline.length > 0 ? Math.max.apply(null, state.timeline.map(function(t){return t.id})) + 1 : 1;
+    state.timeline.push({ id: newId, title: title, date: date, desc: desc, type: type });
+    save();
+    renderTimeline();
+    document.getElementById('popup-timeline-title').value = '';
+    document.getElementById('popup-timeline-date').value = '';
+    document.getElementById('popup-timeline-desc').value = '';
     toast('时间节点已添加');
   });
   document.addEventListener('click', function(e) {
