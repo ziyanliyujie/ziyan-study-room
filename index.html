@@ -916,7 +916,7 @@
     <div class="tooltip-row" id="tooltip-checkin"><span>打卡状态</span><span>未打卡</span></div>
   </div>
 
-  <script src="./_shared/js/echarts.min.js"></script>
+  <script src="./shared/js/echarts.min.js"></script>
   <script>
   /* ===== 主题切换 ===== */
   var savedTheme = localStorage.getItem('workstation_theme') || 'dark';
@@ -2304,11 +2304,11 @@
       if (html.indexOf(marker) > -1) {
         html = html.replace(marker, injectScript + marker);
       }
-      html = html.replace('src="./_shared/js/echarts.min.js"', 'src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"');
+      html = html.replace('src="./shared/js/echarts.min.js"', 'src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"');
       downloadHtml(html);
     }).catch(function(){
       var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-      html = html.replace('src="./_shared/js/echarts.min.js"', 'src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"');
+      html = html.replace('src="./shared/js/echarts.min.js"', 'src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"');
       downloadHtml(html);
     });
     function downloadHtml(html){
