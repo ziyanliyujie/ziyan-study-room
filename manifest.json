@@ -1,0 +1,25 @@
+{
+  "name": "子言的学习屋",
+  "short_name": "学习屋",
+  "description": "考研备考 · 百日冲刺 - 华工安全工程",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#1e293b",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "assets/scut-logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/scut-logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
