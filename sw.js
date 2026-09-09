@@ -1,4 +1,4 @@
-// 子言的学习屋 - Service Worker (PWA 离线缓存)
+// 子言的考研空间 - Service Worker (PWA 离线缓存)
 const CACHE_NAME = 'ziyan-study-room-v2';
 const ASSETS = [
   './',
