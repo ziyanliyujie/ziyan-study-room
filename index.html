@@ -172,9 +172,10 @@
     .task-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;padding-right:4px}
     .task-list::-webkit-scrollbar{width:4px}
     .task-list::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
-    .task-item{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid transparent;border-radius:8px;padding:8px 10px;transition:all .2s;font-size:13px;animation:slideIn .25s ease-out}
-    @keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+    .task-item{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid transparent;border-radius:8px;padding:8px 10px;transition:all .2s;font-size:13px;animation:slideIn .25s ease-out;cursor:pointer}
+    .task-item:active{transform:scale(0.98)}
     .task-item:hover{border-color:var(--accent)}
+    @keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
     .task-item.done{opacity:0.5}
     .task-item.done .task-text{text-decoration:line-through}
     .task-check{width:16px;height:16px;border:2px solid var(--muted);border-radius:4px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
@@ -1258,21 +1259,29 @@
 
   /* ===== 任务勾选/删除 ===== */
   document.addEventListener('click', function(e){
-    if (e.target.classList.contains('task-check')) {
-      var idx = +e.target.dataset.idx;
-      var type = e.target.dataset.type;
-      var key, tasks;
-      if (type === 'daily' || type === 'quick') { key = getDayKey(); tasks = state.dailyTasks[key]; }
-      else if (type === 'weekly') { tasks = state.weeklyTasks; }
-      else if (type === 'monthly') { key = getMonthKey(); tasks = state.monthlyTasks[key]; }
-      if (tasks) {
-        tasks[idx].done = !tasks[idx].done;
-        save();
-        renderQuickTasks(); renderDailyTasks(); renderWeeklyTasks(); renderMonthlyTasks();
-        renderSubjects(); updateStats(); renderReport();
+    // 点击整个任务项或勾选框都能切换完成状态
+    var taskItem = e.target.closest('.task-item');
+    var isDeleteBtn = e.target.classList.contains('task-delete');
+
+    if (taskItem && !isDeleteBtn) {
+      var checkEl = taskItem.querySelector('.task-check');
+      if (checkEl) {
+        var idx = +checkEl.dataset.idx;
+        var type = checkEl.dataset.type;
+        var key, tasks;
+        if (type === 'daily' || type === 'quick') { key = getDayKey(); tasks = state.dailyTasks[key]; }
+        else if (type === 'weekly') { tasks = state.weeklyTasks; }
+        else if (type === 'monthly') { key = getMonthKey(); tasks = state.monthlyTasks[key]; }
+        if (tasks) {
+          tasks[idx].done = !tasks[idx].done;
+          save();
+          renderQuickTasks(); renderDailyTasks(); renderWeeklyTasks(); renderMonthlyTasks();
+          renderSubjects(); updateStats(); renderReport();
+          toast(tasks[idx].done ? '✓ 任务完成' : '↩ 已撤回');
+        }
       }
     }
-    if (e.target.classList.contains('task-delete')) {
+    if (isDeleteBtn) {
       var idx = +e.target.dataset.idx;
       var type = e.target.dataset.type;
       var key;
