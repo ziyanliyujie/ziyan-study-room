@@ -1084,6 +1084,22 @@
 
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show')},2000); }
+  // 初始化/修复 state 结构（下载后也调用）
+  function initState(){
+    if (!Array.isArray(state.subjects) || state.subjects.length === 0) {
+      state.subjects = [
+        { name:'数学', target:120, progress:0 },
+        { name:'专业课', target:120, progress:0 },
+        { name:'英语', target:70, progress:0 },
+        { name:'政治', target:70, progress:0 }
+      ];
+    }
+    if (!state.dailyTasks) state.dailyTasks = {};
+    if (!state.weeklyTasks) state.weeklyTasks = [];
+    if (!state.monthlyTasks) state.monthlyTasks = {};
+    if (!state.checkin) state.checkin = { dates:[], moods:{}, hours:{}, reviews:{} };
+    if (!state.review) state.review = '';
+  }
 
   /* ===== 考研倒计时 ===== */
   var examDate = new Date('2026-12-19T08:30:00');
@@ -1141,10 +1157,15 @@
   var currentDay = new Date().getDay() || 7;
   var dayNames = ['','周一','周二','周三','周四','周五','周六','周日'];
   function getDayKey(dayOffset){
-    var d = new Date(); var day = d.getDay()||7;
-    var mon = new Date(d); mon.setDate(d.getDate()-day+1);
+    var d = new Date();
+    var day = d.getDay()||7;
+    var mon = new Date(d.getFullYear(), d.getMonth(), d.getDate()-day+1);
     mon.setDate(mon.getDate()+(dayOffset||currentDay)-1);
-    return mon.toISOString().slice(0,10);
+    // 使用本地日期避免时区偏移
+    var y = mon.getFullYear();
+    var m = String(mon.getMonth()+1).padStart(2,'0');
+    var dd = String(mon.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+dd;
   }
   function getTodayTasks(){ var key = getDayKey(); return state.dailyTasks[key] || []; }
   function renderQuickTasks(){
@@ -1334,7 +1355,10 @@
   });
 
   /* ===== 打卡 ===== */
-  function todayKey(){ return new Date().toISOString().slice(0,10); }
+  function todayKey(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
   function getCurrentStreak(){
     state.checkin.dates.sort();
     var streak = 0;
@@ -2516,11 +2540,33 @@
         return;
       }
       state = cloudData;
+      initState(); // 确保数据结构完整
       save();
+      // 重置日期选择器到今天
+      currentDay = new Date().getDay() || 7;
+      var ds = document.getElementById('day-selector');
+      if (ds) {
+        ds.innerHTML = '';
+        for (var d=1; d<=7; d++){
+          var dbtn = document.createElement('button');
+          dbtn.className = 'day-btn' + (d===currentDay ? ' active' : '');
+          dbtn.textContent = dayNames[d];
+          dbtn.dataset.day = d;
+          (function(dd){
+            dbtn.addEventListener('click', function(){
+              document.querySelectorAll('.day-btn').forEach(function(b){b.classList.remove('active')});
+              this.classList.add('active');
+              currentDay = +this.dataset.day;
+              renderDailyTasks();
+            });
+          })(d);
+          ds.appendChild(dbtn);
+        }
+      }
       renderQuickTasks(); renderDailyTasks(); renderWeeklyTasks();
       renderMonthlyTasks(); renderSubjects(); renderTimeline(); renderCalendar();
       renderReport(); renderHomeReview(); updateCheckinBtn(); updateStats(); renderChart();
-      reviewText.value = state.review || '';
+      if (reviewText) reviewText.value = state.review || '';
 
       btn.disabled = false; btn.textContent = '⬇ 下载同步';
       var time = new Date().toLocaleString('zh-CN', {hour12:false});
@@ -2590,7 +2636,7 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js?v=6').then(function(reg) {
+  navigator.serviceWorker.register('sw.js?v=7').then(function(reg) {
     // 检测到新 SW 就强制更新
     reg.addEventListener('updatefound', function() {
       var newWorker = reg.installing;
