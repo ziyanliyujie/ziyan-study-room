@@ -436,17 +436,17 @@
       <div class="topbar-left">
         <img class="topbar-logo" src="assets/scut-logo.jpg" alt="华工校徽" onerror="this.style.display='none'">
         <div>
-          <div class="topbar-title" id="page-title">首页</div>
-          <div class="topbar-date" id="topbar-date">2026年9月9日 星期三</div>
+          <div class="topbar-title" id="page-title">计划</div>
+          <div class="topbar-date" id="topbar-date">2026年9月10日 星期四</div>
         </div>
       </div>
       <div class="topbar-right">
         <div class="countdown-mini">
-          <div class="cd-mini-item"><div class="cd-mini-num" id="cd-days">100</div><div class="cd-mini-label">天</div></div>
-          <div class="cd-mini-item"><div class="cd-mini-num" id="cd-hours">20</div><div class="cd-mini-label">时</div></div>
-          <div class="cd-mini-item"><div class="cd-mini-num" id="cd-mins">24</div><div class="cd-mini-label">分</div></div>
+          <div class="cd-mini-item"><div class="cd-mini-num" id="cd-days">99</div><div class="cd-mini-label">天</div></div>
+          <div class="cd-mini-item"><div class="cd-mini-num" id="cd-hours">19</div><div class="cd-mini-label">时</div></div>
+          <div class="cd-mini-item"><div class="cd-mini-num" id="cd-mins">57</div><div class="cd-mini-label">分</div></div>
         </div>
-        <div class="streak-badge"><span class="streak-dot"></span><span id="streak-text">0</span></div>
+        <div class="streak-badge"><span class="streak-dot"></span><span id="streak-text">0天</span></div>
       </div>
     </div>
 
@@ -454,13 +454,13 @@
     <div class="content">
 
       <!-- ===== Tab 1: 首页 ===== -->
-      <div class="page active" id="page-home">
+      <div class="page" id="page-home">
         <!-- 每日一句 -->
         <div class="daily-quote">
           <span class="quote-icon">💪</span>
           <div>
-            <div class="quote-text" id="daily-quote-text">熬得住就出众，熬不住就出局</div>
-            <div class="quote-author" id="daily-quote-author">— 现实</div>
+            <div class="quote-text" id="daily-quote-text">不要假装努力，结果不会陪你演戏</div>
+            <div class="quote-author" id="daily-quote-author">— 扎心了</div>
           </div>
         </div>
 
@@ -532,7 +532,7 @@
       </div>
 
       <!-- ===== Tab 2: 计划 ===== -->
-      <div class="page" id="page-plan">
+      <div class="page active" id="page-plan">
         <div class="plan-tabs">
           <div class="plan-tab active" data-plan="daily">日计划</div>
           <div class="plan-tab" data-plan="weekly">周计划</div>
@@ -543,7 +543,7 @@
         <div class="plan-content" id="plan-daily">
           <div class="card">
             <div class="card-title"><span>📅 每日学习计划</span><span class="tag" id="daily-tag">0/0 完成</span></div>
-            <div class="day-selector" id="day-selector"></div>
+            <div class="day-selector" id="day-selector"><button class="day-btn" data-day="1">周一</button><button class="day-btn" data-day="2">周二</button><button class="day-btn" data-day="3">周三</button><button class="day-btn active" data-day="4">周四</button><button class="day-btn" data-day="5">周五</button><button class="day-btn" data-day="6">周六</button><button class="day-btn" data-day="7">周日</button></div>
             <div class="task-input-row">
               <select id="task-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
               <input type="text" id="task-input" placeholder="输入学习任务...">
@@ -570,7 +570,7 @@
         <div class="plan-content" id="plan-monthly" style="display:none">
           <div class="card">
             <div class="card-title"><span>🗓️ 月度冲刺目标</span><span class="tag" id="monthly-tag">0/0 完成</span></div>
-            <div class="month-selector" id="month-selector"></div>
+            <div class="month-selector" id="month-selector"><button class="month-btn active" data-month="2026-09">2026年9月</button><button class="month-btn" data-month="2026-10">2026年10月</button><button class="month-btn" data-month="2026-11">2026年11月</button><button class="month-btn" data-month="2026-12">2026年12月</button></div>
             <div class="task-input-row">
               <select id="monthly-task-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
               <input type="text" id="monthly-task-input" placeholder="输入本月目标...">
@@ -620,7 +620,7 @@
             <div class="cal-stat"><div class="cal-stat-num" id="stat-total-days">0</div><div class="cal-stat-label">学习天数</div></div>
             <div class="cal-stat"><div class="cal-stat-num" id="stat-avg-hours">0</div><div class="cal-stat-label">日均(h)</div></div>
           </div>
-          <div class="calendar-grid" id="dash-cal-grid" style="gap:4px;"><div class="cal-weekday">一</div><div class="cal-weekday">二</div><div class="cal-weekday">三</div><div class="cal-weekday">四</div><div class="cal-weekday">五</div><div class="cal-weekday">六</div><div class="cal-weekday">日</div></div>
+          <div class="calendar-grid" id="dash-cal-grid" style="gap:4px;"><div class="cal-weekday">一</div><div class="cal-weekday">二</div><div class="cal-weekday">三</div><div class="cal-weekday">四</div><div class="cal-weekday">五</div><div class="cal-weekday">六</div><div class="cal-weekday">日</div><div class="cal-cell empty"></div><div class="cal-cell level-0" data-date="2026-09-01" data-hours="0" data-checked="0" style="font-size: 11px;">1</div><div class="cal-cell level-0" data-date="2026-09-02" data-hours="0" data-checked="0" style="font-size: 11px;">2</div><div class="cal-cell level-0" data-date="2026-09-03" data-hours="0" data-checked="0" style="font-size: 11px;">3</div><div class="cal-cell level-0" data-date="2026-09-04" data-hours="0" data-checked="0" style="font-size: 11px;">4</div><div class="cal-cell level-0" data-date="2026-09-05" data-hours="0" data-checked="0" style="font-size: 11px;">5</div><div class="cal-cell level-0" data-date="2026-09-06" data-hours="0" data-checked="0" style="font-size: 11px;">6</div><div class="cal-cell level-0" data-date="2026-09-07" data-hours="0" data-checked="0" style="font-size: 11px;">7</div><div class="cal-cell level-0" data-date="2026-09-08" data-hours="0" data-checked="0" style="font-size: 11px;">8</div><div class="cal-cell level-0" data-date="2026-09-09" data-hours="0" data-checked="0" style="font-size: 11px;">9</div><div class="cal-cell level-0 today" data-date="2026-09-10" data-hours="0" data-checked="0" style="font-size: 11px;">10</div><div class="cal-cell level-0" data-date="2026-09-11" data-hours="0" data-checked="0" style="font-size: 11px;">11</div><div class="cal-cell level-0" data-date="2026-09-12" data-hours="0" data-checked="0" style="font-size: 11px;">12</div><div class="cal-cell level-0" data-date="2026-09-13" data-hours="0" data-checked="0" style="font-size: 11px;">13</div><div class="cal-cell level-0" data-date="2026-09-14" data-hours="0" data-checked="0" style="font-size: 11px;">14</div><div class="cal-cell level-0" data-date="2026-09-15" data-hours="0" data-checked="0" style="font-size: 11px;">15</div><div class="cal-cell level-0" data-date="2026-09-16" data-hours="0" data-checked="0" style="font-size: 11px;">16</div><div class="cal-cell level-0" data-date="2026-09-17" data-hours="0" data-checked="0" style="font-size: 11px;">17</div><div class="cal-cell level-0" data-date="2026-09-18" data-hours="0" data-checked="0" style="font-size: 11px;">18</div><div class="cal-cell level-0" data-date="2026-09-19" data-hours="0" data-checked="0" style="font-size: 11px;">19</div><div class="cal-cell level-0" data-date="2026-09-20" data-hours="0" data-checked="0" style="font-size: 11px;">20</div><div class="cal-cell level-0" data-date="2026-09-21" data-hours="0" data-checked="0" style="font-size: 11px;">21</div><div class="cal-cell level-0" data-date="2026-09-22" data-hours="0" data-checked="0" style="font-size: 11px;">22</div><div class="cal-cell level-0" data-date="2026-09-23" data-hours="0" data-checked="0" style="font-size: 11px;">23</div><div class="cal-cell level-0" data-date="2026-09-24" data-hours="0" data-checked="0" style="font-size: 11px;">24</div><div class="cal-cell level-0" data-date="2026-09-25" data-hours="0" data-checked="0" style="font-size: 11px;">25</div><div class="cal-cell level-0" data-date="2026-09-26" data-hours="0" data-checked="0" style="font-size: 11px;">26</div><div class="cal-cell level-0" data-date="2026-09-27" data-hours="0" data-checked="0" style="font-size: 11px;">27</div><div class="cal-cell level-0" data-date="2026-09-28" data-hours="0" data-checked="0" style="font-size: 11px;">28</div><div class="cal-cell level-0" data-date="2026-09-29" data-hours="0" data-checked="0" style="font-size: 11px;">29</div><div class="cal-cell level-0" data-date="2026-09-30" data-hours="0" data-checked="0" style="font-size: 11px;">30</div></div>
           <div class="calendar-legend" style="margin-top:8px;">
             <span style="font-size:9px;">少</span>
             <div class="legend-squares">
@@ -638,13 +638,13 @@
         <!-- 周学习时长 -->
         <div class="card">
           <div class="card-title"><span>📈 本周学习时长</span><span class="tag" id="week-hours-tag">0.0小时</span></div>
-          <div id="chart-weekly" style="width:100%;height:220px;user-select:none;-webkit-tap-highlight-color:rgba(0,0,0,0);position:relative;"></div>
+          <div id="chart-weekly" style="width:100%;height:220px;user-select:none;-webkit-tap-highlight-color:rgba(0,0,0,0);position:relative;" _echarts_instance_="ec_1789014445429"><div style="position: relative; width: 100px; height: 220px; padding: 0px; margin: 0px; border-width: 0px;"><canvas data-zr-dom-id="zr_0" width="125" height="275" style="position: absolute; left: 0px; top: 0px; width: 100px; height: 220px; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); padding: 0px; margin: 0px; border-width: 0px;"></canvas></div><div class=""></div></div>
         </div>
 
         <!-- 目标分数卡片 -->
         <div class="card">
           <div class="card-title"><span>🎯 目标进度</span><span class="tag" id="goal-avg-tag">0%</span></div>
-          <div class="grid-2" id="subject-grid-data" style="gap:10px;"></div>
+          <div class="grid-2" id="subject-grid-data" style="gap:10px;"><div class="subject-card"><div class="subject-head"><span class="subject-name">数学</span><span class="subject-score">目标 120 分</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div><div class="progress-text">当前进度：0%</div><div class="progress-input"><input type="range" min="0" max="100" value="0" data-idx="0"></div></div><div class="subject-card"><div class="subject-head"><span class="subject-name">专业课</span><span class="subject-score">目标 120 分</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div><div class="progress-text">当前进度：0%</div><div class="progress-input"><input type="range" min="0" max="100" value="0" data-idx="1"></div></div><div class="subject-card"><div class="subject-head"><span class="subject-name">英语</span><span class="subject-score">目标 70 分</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div><div class="progress-text">当前进度：0%</div><div class="progress-input"><input type="range" min="0" max="100" value="0" data-idx="2"></div></div><div class="subject-card"><div class="subject-head"><span class="subject-name">政治</span><span class="subject-score">目标 70 分</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div><div class="progress-text">当前进度：0%</div><div class="progress-input"><input type="range" min="0" max="100" value="0" data-idx="3"></div></div></div>
         </div>
 
         <!-- 考研时间线（可折叠） -->
@@ -676,7 +676,7 @@
               </div>
               <div id="timeline-upcoming-section">
                 <div class="timeline-section-title">📌 即将到来</div>
-                <div class="timeline" id="timeline-upcoming"></div>
+                <div class="timeline" id="timeline-upcoming"><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">考研预报名</div></div><div class="timeline-date">9月24日 周四</div><div class="timeline-desc">登录研招网进行预报名，建议提前准备好相关材料</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 14 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">考研正式报名</div></div><div class="timeline-date">10月5日 周一</div><div class="timeline-desc">正式报名阶段，务必核对报名信息无误</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 25 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">网上确认</div></div><div class="timeline-date">11月1日 周日</div><div class="timeline-desc">按报考点要求进行网上确认，上传照片和材料</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 52 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">打印准考证</div></div><div class="timeline-date">12月12日 周六</div><div class="timeline-desc">研招网下载并打印准考证，建议多打印几份备用</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 93 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">考研初试 - 第一天</div></div><div class="timeline-date">12月19日 周六</div><div class="timeline-desc">上午：政治 / 管理类综合  下午：英语</div><div class="timeline-meta"><span class="timeline-tag exam">考试相关</span><span class="timeline-countdown">还有 100 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">考研初试 - 第二天</div></div><div class="timeline-date">12月20日 周日</div><div class="timeline-desc">上午：数学 / 业务课一  下午：专业课 / 业务课二</div><div class="timeline-meta"><span class="timeline-tag exam">考试相关</span><span class="timeline-countdown">还有 101 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">初试成绩公布</div></div><div class="timeline-date">2月15日 周一</div><div class="timeline-desc">关注研招网和华工研究生院官网查分</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 158 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">国家线公布</div></div><div class="timeline-date">3月15日 周一</div><div class="timeline-desc">教育部公布考研国家线</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 186 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">华工复试线公布</div></div><div class="timeline-date">3月20日 周六</div><div class="timeline-desc">华南理工大学公布复试分数线</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 191 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">考研复试</div></div><div class="timeline-date">3月25日 周四</div><div class="timeline-desc">专业课笔试 + 综合面试 + 英语面试</div><div class="timeline-meta"><span class="timeline-tag exam">考试相关</span><span class="timeline-countdown">还有 196 天</span></div></div></div></div>
               </div>
               <div id="timeline-past-section" style="display:none">
                 <div class="timeline-section-title">✅ 已过节点</div>
@@ -720,8 +720,8 @@
           <div class="collapse-body" id="data-report-body">
             <div class="report-paper" style="margin-top:12px;padding:16px 20px;">
               <div class="report-header">
-                <div class="report-date" id="report-date">9月9日</div>
-                <div class="report-weekday" id="report-weekday">2026年 · 星期三</div>
+                <div class="report-date" id="report-date">9月10日</div>
+                <div class="report-weekday" id="report-weekday">2026年 · 星期四</div>
                 <div class="report-nav">
                   <button id="report-prev">‹</button>
                   <button id="report-today" style="width:auto;padding:0 10px;font-size:11px;">今天</button>
@@ -746,7 +746,7 @@
                 <div class="report-section-title">📝 每日复盘</div>
                 <div class="report-review-box" id="report-review"><span class="report-empty">这一天没有写复盘</span></div>
               </div>
-              <div class="report-footer" id="report-footer">子言的考研空间 · 每日日报 · 2026/09/09 · 未打卡</div>
+              <div class="report-footer" id="report-footer">子言的考研空间 · 每日日报 · 2026/09/10 · 未打卡</div>
               <div class="report-share-bar">
                 <button class="share-btn" id="share-copy">📋 复制</button>
                 <button class="share-btn" id="share-image">🖼️ 保存图片</button>
@@ -767,7 +767,7 @@
         <!-- 主题切换 -->
         <div class="settings-list">
           <div class="settings-item" id="profile-theme-btn">
-            <span class="settings-icon">🌙</span>
+            <span class="settings-icon">☀️</span>
             <span class="settings-label">主题模式</span>
             <span class="settings-value" id="profile-theme-label">浅色模式</span>
             <span class="settings-arrow">›</span>
@@ -821,7 +821,7 @@
 
         <!-- 添加到桌面 -->
         <div class="settings-list">
-          <div class="settings-item collapse-header" id="profile-add-desktop-toggle">
+          <div class="settings-item collapse-header" id="profile-add-desktop-toggle" style="position: relative;">
             <span class="settings-icon">📱</span>
             <span class="settings-label">添加到桌面</span>
             <span class="settings-arrow collapse-icon" id="profile-add-desktop-icon">›</span>
@@ -857,12 +857,12 @@
 
         <!-- 其他设置 -->
         <div class="settings-list">
-          <div class="settings-item" id="setting-download-app">
+          <div class="settings-item" id="setting-download-app" style="position: relative;">
             <span class="settings-icon">📦</span>
             <span class="settings-label">下载完整应用</span>
             <span class="settings-arrow">›</span>
           </div>
-          <div class="settings-item" id="setting-reset" style="color:var(--danger)">
+          <div class="settings-item" id="setting-reset" style="color: var(--danger); position: relative;">
             <span class="settings-icon">⚠️</span>
             <span class="settings-label" style="color:var(--danger)">重置所有数据</span>
             <span class="settings-arrow">›</span>
@@ -905,7 +905,7 @@
       </div>
       <div id="popup-timeline-upcoming-section">
         <div class="timeline-section-title">📌 即将到来</div>
-        <div class="timeline" id="popup-timeline-upcoming"></div>
+        <div class="timeline" id="popup-timeline-upcoming"><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">考研预报名</div></div><div class="timeline-date">9月24日 周四</div><div class="timeline-desc">登录研招网进行预报名，建议提前准备好相关材料</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 14 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">考研正式报名</div></div><div class="timeline-date">10月5日 周一</div><div class="timeline-desc">正式报名阶段，务必核对报名信息无误</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 25 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">网上确认</div></div><div class="timeline-date">11月1日 周日</div><div class="timeline-desc">按报考点要求进行网上确认，上传照片和材料</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 52 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">打印准考证</div></div><div class="timeline-date">12月12日 周六</div><div class="timeline-desc">研招网下载并打印准考证，建议多打印几份备用</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 93 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">考研初试 - 第一天</div></div><div class="timeline-date">12月19日 周六</div><div class="timeline-desc">上午：政治 / 管理类综合  下午：英语</div><div class="timeline-meta"><span class="timeline-tag exam">考试相关</span><span class="timeline-countdown">还有 100 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">考研初试 - 第二天</div></div><div class="timeline-date">12月20日 周日</div><div class="timeline-desc">上午：数学 / 业务课一  下午：专业课 / 业务课二</div><div class="timeline-meta"><span class="timeline-tag exam">考试相关</span><span class="timeline-countdown">还有 101 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">初试成绩公布</div></div><div class="timeline-date">2月15日 周一</div><div class="timeline-desc">关注研招网和华工研究生院官网查分</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 158 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">国家线公布</div></div><div class="timeline-date">3月15日 周一</div><div class="timeline-desc">教育部公布考研国家线</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 186 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">华工复试线公布</div></div><div class="timeline-date">3月20日 周六</div><div class="timeline-desc">华南理工大学公布复试分数线</div><div class="timeline-meta"><span class="timeline-tag official">官方节点</span><span class="timeline-countdown">还有 191 天</span></div></div></div><div class="timeline-item "><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-head"><div class="timeline-title">考研复试</div></div><div class="timeline-date">3月25日 周四</div><div class="timeline-desc">专业课笔试 + 综合面试 + 英语面试</div><div class="timeline-meta"><span class="timeline-tag exam">考试相关</span><span class="timeline-countdown">还有 196 天</span></div></div></div></div>
       </div>
       <div id="popup-timeline-past-section" style="display:none">
         <div class="timeline-section-title">✅ 已过节点</div>
@@ -917,11 +917,11 @@
   <!-- 底部导航栏 -->
   <nav class="tab-bar">
     <div class="tab-bar-inner">
-      <div class="tab-item active" data-tab="home">
+      <div class="tab-item" data-tab="home">
         <div class="tab-icon">🏠</div>
         <div class="tab-label">首页</div>
       </div>
-      <div class="tab-item" data-tab="plan">
+      <div class="tab-item active" data-tab="plan">
         <div class="tab-icon">📅</div>
         <div class="tab-label">计划</div>
       </div>
@@ -1008,7 +1008,6 @@
   setupCollapse('data-review-toggle', 'data-review-body', 'data-review-icon');
   setupCollapse('data-report-toggle', 'data-report-body', 'data-report-icon');
   setupCollapse('cloud-sync-toggle', 'cloud-sync-body', 'cloud-sync-icon');
-  setupCollapse('profile-add-desktop-toggle', 'profile-add-desktop-body', 'profile-add-desktop-icon');
 
   // 计划tab切换
   document.querySelectorAll('.plan-tab').forEach(function(tab){
@@ -2325,44 +2324,6 @@
     };
     reader.readAsText(file);
     this.value = '';
-  });
-  document.getElementById('setting-reset').addEventListener('click', function(){
-    if (confirm('确定要重置所有数据吗？此操作不可撤销！')) {
-      localStorage.removeItem(STORAGE_KEY);
-      location.reload();
-    }
-  });
-
-  /* ===== 下载完整应用 ===== */
-  document.getElementById('setting-download-app').addEventListener('click', function(){
-    toast('正在生成完整应用...');
-    save();
-    fetch(location.href).then(function(r){ return r.text(); }).then(function(html){
-      var dataStr = JSON.stringify(state);
-      var injectScript = '\n  /* ===== 内嵌数据覆盖 ===== */\n  try { var _embeddedData = ' + dataStr + '; if (_embeddedData && !localStorage.getItem(STORAGE_KEY)) { state = _embeddedData; save(); } } catch(e){}\n';
-      var marker = '/* ===== 初始化 ===== */';
-      if (html.indexOf(marker) > -1) {
-        html = html.replace(marker, injectScript + marker);
-      }
-      html = html.replace('src="./shared/js/echarts.min.js"', 'src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"');
-      downloadHtml(html);
-    }).catch(function(){
-      var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-      html = html.replace('src="./shared/js/echarts.min.js"', 'src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"');
-      downloadHtml(html);
-    });
-    function downloadHtml(html){
-      var blob = new Blob([html], {type:'text/html;charset=utf-8'});
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = '子言的考研空间.html';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
-      toast('完整应用已下载，双击打开即可使用');
-    }
   });
 
   /* ===== GitHub Gist 云同步 ===== */
