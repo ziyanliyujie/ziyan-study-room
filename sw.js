@@ -1,5 +1,5 @@
 // 子言的考研空间 - Service Worker (PWA 离线缓存)
-const CACHE_NAME = 'ziyan-study-room-v10';
+const CACHE_NAME = 'ziyan-study-room-v11';
 const ASSETS = [
   './',
   './index.html',
@@ -37,18 +37,24 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   var req = e.request;
 
-  // 跳过非 GET 请求（POST/PATCH 用于云同步上传）
+  // 跳过非 GET 请求
   if (req.method !== 'GET') return;
 
   var url = new URL(req.url);
 
-  // 关键修复：跳过所有跨域 API 请求（GitHub Gist API 等），不缓存、不拦截
+  // 跳过跨域请求（GitHub Gist API 等）
   if (url.origin !== self.location.origin) return;
+
+  // 关键修复：manifest 和带缓存破坏参数(?v=)的请求不走缓存
+  if (url.pathname.endsWith('manifest.json') || url.search.includes('v=')) {
+    e.respondWith(fetch(req).catch(() => caches.match(req)));
+    return;
+  }
 
   e.respondWith(
     caches.match(req).then((cached) => {
       if (cached) {
-        // 缓存命中：后台同时更新缓存（stale-while-revalidate）
+        // stale-while-revalidate：返回缓存，后台更新
         fetch(req).then((res) => {
           if (res && res.ok) {
             const clone = res.clone();
