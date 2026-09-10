@@ -1,14 +1,13 @@
 // 子言的考研空间 - Service Worker (PWA 离线缓存)
-const CACHE_NAME = 'ziyan-study-room-v11';
+const CACHE_NAME = 'ziyan-final-v1';
 const ASSETS = [
   './',
   './index.html',
-  './manifest.json',
-  './assets/scut-logo.jpg',
+  './pwa.json',
+  './assets/app-icon-192.png',
+  './assets/app-icon-512.png',
+  './assets/app-touch-icon.png',
   './assets/avatar.jpg',
-  './assets/icon-192.png',
-  './assets/icon-512.png',
-  './assets/apple-touch-icon.png',
   './assets/hero-bg-1.jpg',
   './assets/hero-bg-2.jpg',
   './assets/hero-bg-3.jpg',
@@ -23,7 +22,7 @@ self.addEventListener('install', (e) => {
   self.skipWaiting();
 });
 
-// 激活：清理旧缓存
+// 激活：清理所有旧缓存
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
@@ -37,16 +36,15 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   var req = e.request;
 
-  // 跳过非 GET 请求
   if (req.method !== 'GET') return;
 
   var url = new URL(req.url);
 
-  // 跳过跨域请求（GitHub Gist API 等）
+  // 跳过跨域请求
   if (url.origin !== self.location.origin) return;
 
-  // 关键修复：manifest 和带缓存破坏参数(?v=)的请求不走缓存
-  if (url.pathname.endsWith('manifest.json') || url.search.includes('v=')) {
+  // manifest/pwa.json 永远走网络，不缓存
+  if (url.pathname.endsWith('pwa.json') || url.pathname.endsWith('manifest.json')) {
     e.respondWith(fetch(req).catch(() => caches.match(req)));
     return;
   }
@@ -54,7 +52,6 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(req).then((cached) => {
       if (cached) {
-        // stale-while-revalidate：返回缓存，后台更新
         fetch(req).then((res) => {
           if (res && res.ok) {
             const clone = res.clone();
