@@ -1,5 +1,5 @@
 // 子言的考研空间 - Service Worker (PWA 离线缓存)
-const CACHE_NAME = 'ziyan-final-v2';
+const CACHE_NAME = 'ziyan-final-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const ASSETS = [
   './assets/app-icon-192.png',
   './assets/app-icon-512.png',
   './assets/app-touch-icon.png',
+  './assets/scut-seal-new.jpg',
   './assets/avatar.jpg',
   './assets/hero-bg-1.jpg',
   './assets/hero-bg-2.jpg',
@@ -22,17 +23,24 @@ self.addEventListener('install', (e) => {
   self.skipWaiting();
 });
 
-// 激活：清理所有旧缓存
+// 监听消息 - 允许强制跳过等待
+self.addEventListener('message', (e) => {
+  if (e.data === 'skipWaiting') {
+    self.skipWaiting();
+  }
+});
+
+// 激活：清理所有旧缓存，强制接管
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      Promise.all(keys.map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
-// 请求拦截
+// 请求拦截 - 网络优先策略
 self.addEventListener('fetch', (e) => {
   var req = e.request;
 
@@ -43,12 +51,25 @@ self.addEventListener('fetch', (e) => {
   // 跳过跨域请求
   if (url.origin !== self.location.origin) return;
 
+  // HTML 文件：永远网络优先，确保拿到最新版本
+  if (req.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.endsWith('/')) {
+    e.respondWith(
+      fetch(req).then((res) => {
+        const clone = res.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+        return res;
+      }).catch(() => caches.match(req).then((cached) => cached || caches.match('./index.html')))
+    );
+    return;
+  }
+
   // manifest/pwa.json 永远走网络，不缓存
   if (url.pathname.endsWith('pwa.json') || url.pathname.endsWith('manifest.json')) {
     e.respondWith(fetch(req).catch(() => caches.match(req)));
     return;
   }
 
+  // 其他资源：缓存优先，后台更新
   e.respondWith(
     caches.match(req).then((cached) => {
       if (cached) {

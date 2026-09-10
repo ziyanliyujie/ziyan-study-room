@@ -466,7 +466,7 @@
     <!-- 顶部状态栏 -->
     <div class="topbar">
       <div class="topbar-left">
-        <img class="topbar-logo" src="assets/scut-seal-new.jpg" alt="华工校徽" onerror="this.style.display='none'">
+        <img class="topbar-logo" src="assets/scut-seal-new.jpg?v=5" alt="华工校徽" onerror="this.style.display='none'">
         <div>
           <div class="topbar-title" id="page-title">计划</div>
           <div class="topbar-date" id="topbar-date">2026年9月10日 星期四</div>
@@ -2528,7 +2528,28 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
+  navigator.serviceWorker.register('sw.js?v=3').then(function(reg) {
+    // 检测到新 SW 就强制更新
+    reg.addEventListener('updatefound', function() {
+      var newWorker = reg.installing;
+      if (newWorker) {
+        newWorker.addEventListener('statechange', function() {
+          if (newWorker.state === 'activated') {
+            // 新 SW 已激活，强制刷新页面
+            window.location.reload();
+          }
+        });
+      }
+    });
+    // 已有 SW 但页面加载时也检查更新
+    if (reg.waiting) {
+      reg.waiting.postMessage('skipWaiting');
+    }
+  }).catch(()=>{});
+  // 收到 controllerchange 消息后刷新
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    window.location.reload();
+  });
 }
 </script>
 </body></html>
