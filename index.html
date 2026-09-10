@@ -171,13 +171,17 @@
     .subject-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
     .subject-name{font-size:13px;font-weight:600}
     .subject-score{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--accent-light);color:var(--accent2);font-weight:600}
-    .progress-bar{height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;margin-bottom:4px}
+    .progress-bar{height:7px;background:rgba(148,163,184,0.2);border-radius:4px;overflow:hidden;margin-bottom:4px}
     .progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--purple));transition:width 0.5s var(--ease-out);position:relative}
     .progress-fill::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);animation:shimmer 2.5s infinite}
     @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
     .progress-text{font-size:10px;color:var(--muted)}
     .progress-input{margin-top:6px}
-    .progress-input input[type="range"]{width:100%;accent-color:var(--accent2)}
+    .progress-input input[type="range"]{width:100%;accent-color:var(--accent2);height:6px;border-radius:3px}
+    .progress-input input[type="range"]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:rgba(148,163,184,0.25)}
+    .progress-input input[type="range"]::-moz-range-track{height:6px;border-radius:3px;background:rgba(148,163,184,0.25)}
+    .progress-input input[type="range"]::-webkit-slider-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent2);margin-top:-5px;box-shadow:0 1px 4px rgba(0,0,0,0.3)}
+    .progress-input input[type="range"]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent2);border:none;box-shadow:0 1px 4px rgba(0,0,0,0.3)}
 
     /* ===== 任务列表 ===== */
     .task-input-row{display:flex;gap:6px;margin-bottom:10px}
@@ -557,6 +561,18 @@
             <button class="review-save" id="home-review-save">保存今日复盘</button>
           </div>
         </div>
+
+        <!-- 每日学习计划 -->
+        <div class="card">
+          <div class="card-title"><span>📅 每日学习计划</span><span class="tag" id="daily-tag">0/0 完成</span></div>
+          <div class="day-selector" id="day-selector"></div>
+          <div class="task-input-row">
+            <select id="task-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
+            <input type="text" id="task-input" placeholder="输入学习任务...">
+            <button id="task-add">添加</button>
+          </div>
+          <div class="task-list" id="task-list"><p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">暂无任务，添加一个吧</p></div>
+        </div>
       </div>
 
       <!-- ===== Tab 2: 计划 ===== -->
@@ -567,17 +583,10 @@
           <div class="plan-tab" data-plan="monthly">月计划</div>
         </div>
 
-        <!-- 日计划 -->
+        <!-- 日计划（已移至首页底部） -->
         <div class="plan-content" id="plan-daily">
           <div class="card">
-            <div class="card-title"><span>📅 每日学习计划</span><span class="tag" id="daily-tag">0/0 完成</span></div>
-            <div class="day-selector" id="day-selector"></div>
-            <div class="task-input-row">
-              <select id="task-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
-              <input type="text" id="task-input" placeholder="输入学习任务...">
-              <button id="task-add">添加</button>
-            </div>
-            <div class="task-list" id="task-list"><p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">暂无任务，添加一个吧</p></div>
+            <p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">每日学习计划已移至首页底部，请返回首页查看 ✨</p>
           </div>
         </div>
 
