@@ -1,5 +1,5 @@
 // 子言的考研空间 - Service Worker (PWA 离线缓存)
-const CACHE_NAME = 'ziyan-final-v3';
+const CACHE_NAME = 'ziyan-final-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const ASSETS = [
   './assets/app-icon-192.png',
   './assets/app-icon-512.png',
   './assets/app-touch-icon.png',
+  './assets/apple-touch-icon.png',
   './assets/scut-seal-new.jpg',
   './assets/avatar.jpg',
   './assets/hero-bg-1.jpg',
