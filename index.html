@@ -1099,6 +1099,18 @@
     if (!state.monthlyTasks) state.monthlyTasks = {};
     if (!state.checkin) state.checkin = { dates:[], moods:{}, hours:{}, reviews:{} };
     if (!state.review) state.review = '';
+    if (!state.timeline) state.timeline = [
+      { id: 1, title: '考研预报名', date: '2026-09-24', desc: '登录研招网进行预报名，建议提前准备好相关材料', type: 'official' },
+      { id: 2, title: '考研正式报名', date: '2026-10-05', desc: '正式报名阶段，务必核对报名信息无误', type: 'official' },
+      { id: 3, title: '网上确认', date: '2026-11-01', desc: '按报考点要求进行网上确认，上传照片和材料', type: 'official' },
+      { id: 4, title: '打印准考证', date: '2026-12-12', desc: '研招网下载并打印准考证，建议多打印几份备用', type: 'official' },
+      { id: 5, title: '考研初试 - 第一天', date: '2026-12-19', desc: '上午：政治 / 管理类综合  下午：英语', type: 'exam' },
+      { id: 6, title: '考研初试 - 第二天', date: '2026-12-20', desc: '上午：数学 / 业务课一  下午：专业课 / 业务课二', type: 'exam' },
+      { id: 7, title: '初试成绩公布', date: '2027-02-15', desc: '关注研招网和华工研究生院官网查分', type: 'official' },
+      { id: 8, title: '国家线公布', date: '2027-03-15', desc: '教育部公布考研国家线', type: 'official' },
+      { id: 9, title: '华工复试线公布', date: '2027-03-20', desc: '华南理工大学公布复试分数线', type: 'official' },
+      { id: 10, title: '考研复试', date: '2027-03-25', desc: '专业课笔试 + 综合面试 + 英语面试', type: 'exam' }
+    ];
   }
 
   /* ===== 考研倒计时 ===== */
@@ -2515,7 +2527,6 @@
 
     var uploadData = JSON.parse(JSON.stringify(state)); // 深拷贝
     uploadData._lastSync = Date.now();
-    delete uploadData.timeline; // timeline 不需要重复上传
 
     var gistId = getGistId();
     var method = gistId ? 'PATCH' : 'POST';
@@ -2545,6 +2556,7 @@
         localStorage.setItem(GIST_ID_KEY, data.id);
       }
       state._lastSync = uploadData._lastSync;
+      localStorage.setItem('kaoyan_last_upload', String(uploadData._lastSync));
       save();
       btn.disabled = false; btn.textContent = '⬆ 上传同步';
       var time = new Date().toLocaleString('zh-CN', {hour12:false});
@@ -2609,6 +2621,7 @@
       // 全量覆盖：云端数据直接替换本地
       state = cloudData;
       initState();
+      delete state._lastSync; // 清理临时字段，避免影响启动检查
       save();
       localStorage.setItem('cloud_just_downloaded', '1');
 
@@ -2647,7 +2660,7 @@
       if (!file) return;
       var cloudData = JSON.parse(file.content);
       var cloudSync = cloudData._lastSync || 0;
-      var localSync = state._lastSync || 0;
+      var localSync = parseInt(localStorage.getItem('kaoyan_last_upload') || '0');
       if (cloudSync > localSync){
         setCloudStatus('云端有更新');
         setCloudMsg('检测到云端有较新数据，建议点击「⬇ 下载同步」', false);
@@ -2685,7 +2698,7 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js?v=10').then(function(reg) {
+  navigator.serviceWorker.register('sw.js?v=11').then(function(reg) {
     // 检测到新 SW 就强制更新
     reg.addEventListener('updatefound', function() {
       var newWorker = reg.installing;
