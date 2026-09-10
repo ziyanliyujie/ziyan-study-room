@@ -2435,6 +2435,76 @@
     toast('Token 已清除');
   });
 
+  /* 智能合并：云端数据合并到本地（不覆盖本地较新的数据） */
+  function mergeState(cloudData){
+    // dailyTasks: 按日期合并，同一天取任务数更多的那方
+    var mergedDaily = {};
+    var allDayKeys = Object.keys(state.dailyTasks || {}).concat(Object.keys(cloudData.dailyTasks || {}));
+    var seen = {};
+    allDayKeys.forEach(function(k){
+      if (seen[k]) return; seen[k] = 1;
+      var localTasks = state.dailyTasks[k] || [];
+      var cloudTasks = cloudData.dailyTasks[k] || [];
+      // 取任务更多的一方
+      mergedDaily[k] = cloudTasks.length > localTasks.length ? cloudTasks : localTasks;
+    });
+
+    // weeklyTasks: 取更多任务的一方
+    var localW = state.weeklyTasks || [];
+    var cloudW = cloudData.weeklyTasks || [];
+    var mergedWeekly = cloudW.length > localW.length ? cloudW : localW;
+
+    // monthlyTasks: 按月合并
+    var mergedMonthly = {};
+    var allMonthKeys = Object.keys(state.monthlyTasks || {}).concat(Object.keys(cloudData.monthlyTasks || {}));
+    var seenM = {};
+    allMonthKeys.forEach(function(k){
+      if (seenM[k]) return; seenM[k] = 1;
+      var localMT = state.monthlyTasks[k] || [];
+      var cloudMT = cloudData.monthlyTasks[k] || [];
+      mergedMonthly[k] = cloudMT.length > localMT.length ? cloudMT : localMT;
+    });
+
+    // checkin: 合并日期、心情、时长、复盘（取各自更新的）
+    var localC = state.checkin || {dates:[],moods:{},hours:{},reviews:{}};
+    var cloudC = cloudData.checkin || {dates:[],moods:{},hours:{},reviews:{}};
+    var mergedDates = Array.from(new Set(localC.dates.concat(cloudC.dates)));
+    var mergedMoods = {};
+    var mergedHours = {};
+    var mergedReviews = {};
+    var allDateKeys = new Set(Object.keys(localC.moods).concat(Object.keys(cloudC.moods), Object.keys(localC.hours), Object.keys(cloudC.hours), Object.keys(localC.reviews), Object.keys(cloudC.reviews)));
+    allDateKeys.forEach(function(k){
+      // 心情：取有值的一方，优先云端
+      mergedMoods[k] = cloudC.moods[k] || localC.moods[k] || undefined;
+      if (mergedMoods[k] === undefined) delete mergedMoods[k];
+      // 时长：取较大值
+      mergedHours[k] = Math.max(localC.hours[k] || 0, cloudC.hours[k] || 0);
+      // 复盘：取较长的一方
+      var lr = localC.reviews[k] || '';
+      var cr = cloudC.reviews[k] || '';
+      mergedReviews[k] = cr.length > lr.length ? cr : lr;
+    });
+
+    // subjects: 取进度较大的一方
+    var mergedSubjects = (cloudData.subjects || state.subjects || []).map(function(s, i){
+      var localS = (state.subjects || [])[i];
+      if (localS && localS.progress > s.progress) return localS;
+      return s;
+    });
+
+    // review: 取较长的一方
+    var mergedReview = (cloudData.review || '').length > (state.review || '').length ? cloudData.review : state.review;
+
+    // 写回 state
+    state.dailyTasks = mergedDaily;
+    state.weeklyTasks = mergedWeekly;
+    state.monthlyTasks = mergedMonthly;
+    state.checkin = {dates:mergedDates, moods:mergedMoods, hours:mergedHours, reviews:mergedReviews};
+    state.subjects = mergedSubjects;
+    state.review = mergedReview;
+    state._lastSync = Date.now();
+  }
+
   /* 上传同步 */
   document.getElementById('cloud-upload').addEventListener('click', function(){
     var token = getCloudToken();
@@ -2443,17 +2513,20 @@
     btn.disabled = true; btn.textContent = '上传中...';
     setCloudMsg('正在上传数据到 GitHub Gist...', false);
 
+    var uploadData = JSON.parse(JSON.stringify(state)); // 深拷贝
+    uploadData._lastSync = Date.now();
+    delete uploadData.timeline; // timeline 不需要重复上传
+
     var gistId = getGistId();
     var method = gistId ? 'PATCH' : 'POST';
     var url = gistId ? GIST_API + '/' + gistId : GIST_API;
-    state._lastSync = Date.now();
 
     var payload = {
       description: '子言的考研空间 - 数据备份',
       public: false,
       files: {}
     };
-    payload.files[GIST_FILENAME] = { content: JSON.stringify(state, null, 2) };
+    payload.files[GIST_FILENAME] = { content: JSON.stringify(uploadData, null, 2) };
 
     fetch(url, {
       method: method,
@@ -2471,6 +2544,7 @@
       if (data.id && !gistId){
         localStorage.setItem(GIST_ID_KEY, data.id);
       }
+      state._lastSync = uploadData._lastSync;
       save();
       btn.disabled = false; btn.textContent = '⬆ 上传同步';
       var time = new Date().toLocaleString('zh-CN', {hour12:false});
@@ -2478,8 +2552,6 @@
       setCloudStatus('已同步');
       toast('数据已上传到云端');
     }).catch(function(err){
-      // 修复：上传失败时不应保存带 _lastSync 的 state
-      delete state._lastSync;
       btn.disabled = false; btn.textContent = '⬆ 上传同步';
       setCloudMsg('上传失败：' + cloudErrMsg(err), true);
     });
@@ -2534,8 +2606,8 @@
       if (!file) throw new Error('未找到备份文件');
       var cloudData = JSON.parse(file.content);
 
-      // 直接覆盖并保存
-      state = cloudData;
+      // 智能合并：不覆盖本地较新的数据
+      mergeState(cloudData);
       initState();
       save();
       localStorage.setItem('cloud_just_downloaded', '1');
@@ -2613,7 +2685,7 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js?v=8').then(function(reg) {
+  navigator.serviceWorker.register('sw.js?v=9').then(function(reg) {
     // 检测到新 SW 就强制更新
     reg.addEventListener('updatefound', function() {
       var newWorker = reg.installing;
