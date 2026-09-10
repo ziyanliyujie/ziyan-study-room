@@ -2529,7 +2529,7 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js?v=5').then(function(reg) {
+  navigator.serviceWorker.register('sw.js?v=6').then(function(reg) {
     // 检测到新 SW 就强制更新
     reg.addEventListener('updatefound', function() {
       var newWorker = reg.installing;
