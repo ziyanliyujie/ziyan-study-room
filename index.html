@@ -605,7 +605,6 @@
               <div class="report-footer" id="report-footer">子言的考研空间 · 每日日报 · 2026/09/10 · 未打卡</div>
               <div class="report-share-bar">
                 <button class="share-btn" id="share-copy">📋 复制</button>
-                <button class="share-btn" id="share-image">🖼️ 保存图片</button>
               </div>
             </div>
           </div>
@@ -1686,209 +1685,6 @@
     document.body.removeChild(ta);
   }
 
-  document.getElementById('share-image').addEventListener('click', function(){
-    var d = getReportDate(reportOffset);
-    var dateStr = d.toISOString().slice(0,10);
-    var weekNames = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
-    var hours = state.checkin.hours[dateStr] || 0;
-    var mood = state.checkin.moods[dateStr] || '';
-    var review = state.checkin.reviews[dateStr] || '';
-    var tasks = state.dailyTasks[dateStr] || [];
-    var done = tasks.filter(function(t){return t.done}).length;
-    var pct = tasks.length > 0 ? Math.round(done/tasks.length*100) : 0;
-    var streak = getStreakAt(dateStr);
-    var checkedIn = state.checkin.dates.includes(dateStr);
-    var moodEmoji = moodEmojis[mood] || '🙂';
-
-    var W = 600, H = 0;
-    var pad = 40;
-    var y = pad;
-
-    // 先计算高度
-    H += 80; // 头部
-    H += 70; // 统计行
-    H += 30; // 任务标题
-    if (tasks.length === 0) { H += 30; } else { H += tasks.length * 30 + 10; }
-    H += 30; // 心情标题
-    H += 40; // 心情内容
-    H += 30; // 复盘标题
-    var reviewLines = review.trim() ? review.trim().split('\n') : ['这一天没有写复盘'];
-    H += reviewLines.length * 26 + 20;
-    H += 50; // 页脚
-    H += pad;
-
-    var canvas = document.createElement('canvas');
-    canvas.width = W;
-    canvas.height = Math.max(H, 400);
-    var ctx = canvas.getContext('2d');
-
-    // 背景
-    var grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grad.addColorStop(0, '#1e293b');
-    grad.addColorStop(1, '#0f172a');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, canvas.height);
-
-    // 装饰边框
-    ctx.strokeStyle = 'rgba(59,130,246,0.3)';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(20, 20, W-40, canvas.height-40);
-
-    ctx.textAlign = 'center';
-
-    // 标题
-    y += 10;
-    ctx.font = 'bold 24px "PingFang SC","Microsoft YaHei",sans-serif';
-    var titleGrad = ctx.createLinearGradient(W*0.3, 0, W*0.7, 0);
-    titleGrad.addColorStop(0, '#60a5fa');
-    titleGrad.addColorStop(1, '#a78bfa');
-    ctx.fillStyle = titleGrad;
-    ctx.fillText('子言的考研空间', W/2, y);
-    y += 22;
-
-    ctx.font = '13px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillStyle = '#64748b';
-    ctx.fillText('每 日 日 报', W/2, y);
-    y += 20;
-
-    // 分隔线
-    ctx.strokeStyle = '#334155';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
-    y += 20;
-
-    // 日期
-    ctx.font = 'bold 18px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillStyle = '#f1f5f9';
-    ctx.fillText((d.getMonth()+1) + '月' + d.getDate() + '日 ' + weekNames[d.getDay()], W/2, y);
-    y += 28;
-
-    // 统计行
-    var statW = (W - pad*2) / 3;
-    var statY = y;
-    var stats = [
-      {num: hours.toFixed(1)+'h', label:'学习时长', color:'#60a5fa'},
-      {num: pct+'%', label:'任务完成', color:'#22c55e'},
-      {num: streak+'天', label:'连续打卡', color:'#f59e0b'}
-    ];
-    stats.forEach(function(s, i){
-      var cx = pad + statW*i + statW/2;
-      ctx.font = 'bold 20px "PingFang SC","Microsoft YaHei",sans-serif';
-      ctx.fillStyle = s.color;
-      ctx.fillText(s.num, cx, statY);
-      ctx.font = '10px "PingFang SC","Microsoft YaHei",sans-serif';
-      ctx.fillStyle = '#64748b';
-      ctx.fillText(s.label, cx, statY+16);
-    });
-    y = statY + 40;
-
-    // 分隔
-    y += 10;
-    ctx.strokeStyle = 'rgba(51,65,85,0.5)';
-    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
-    y += 20;
-
-    // 今日任务
-    ctx.textAlign = 'left';
-    ctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillStyle = '#60a5fa';
-    ctx.fillText('📋 今日任务', pad, y);
-    y += 20;
-
-    if (tasks.length === 0) {
-      ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
-      ctx.fillStyle = '#64748b';
-      ctx.fillText('  这一天没有记录任务', pad, y);
-      y += 20;
-    } else {
-      tasks.forEach(function(t){
-        ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
-        ctx.fillStyle = t.done ? '#22c55e' : '#64748b';
-        ctx.fillText(t.done ? '✅' : '⬜', pad, y);
-        ctx.fillStyle = t.done ? '#64748b' : '#cbd5e1';
-        var prefix = '[' + t.subject + '] ';
-        ctx.fillText(prefix + t.text, pad + 24, y);
-        y += 26;
-      });
-    }
-
-    y += 10;
-    ctx.strokeStyle = 'rgba(51,65,85,0.5)';
-    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
-    y += 20;
-
-    // 心情
-    ctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillStyle = '#60a5fa';
-    ctx.fillText('😊 今日状态', pad, y);
-    y += 20;
-    ctx.font = '16px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillStyle = '#f1f5f9';
-    ctx.fillText(moodEmoji + ' ' + (mood || '未记录'), pad, y);
-    y += 30;
-
-    // 分隔
-    y += 5;
-    ctx.strokeStyle = 'rgba(51,65,85,0.5)';
-    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
-    y += 20;
-
-    // 复盘
-    ctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillStyle = '#60a5fa';
-    ctx.fillText('📝 每日复盘', pad, y);
-    y += 20;
-    ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillStyle = '#cbd5e1';
-    reviewLines.forEach(function(line){
-      // 简单换行处理
-      var maxW = W - pad*2 - 10;
-      var chars = line.split('');
-      var curLine = '';
-      for (var ci = 0; ci < chars.length; ci++) {
-        var testLine = curLine + chars[ci];
-        if (ctx.measureText(testLine).width > maxW) {
-          ctx.fillText(curLine, pad, y);
-          y += 22;
-          curLine = chars[ci];
-        } else {
-          curLine = testLine;
-        }
-      }
-      if (curLine) { ctx.fillText(curLine, pad, y); y += 22; }
-    });
-
-    // 页脚
-    y += 10;
-    ctx.textAlign = 'center';
-    ctx.strokeStyle = '#334155';
-    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
-    y += 20;
-    ctx.font = '10px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillStyle = '#64748b';
-    ctx.fillText('子言的考研空间 · 华工安全工程考研 · ' + dateStr, W/2, y);
-
-    // 下载（兼容手机）
-    var dataUrl = canvas.toDataURL('image/png');
-    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (isIOS) {
-      var win = window.open();
-      if (win) {
-        win.document.write('<title>日报_'+dateStr+'</title><body style="margin:0;background:#1e293b;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="'+dataUrl+'" style="max-width:100%" /><p style="color:#94a3b8;font-size:12px;text-align:center;margin-top:8px">长按图片保存</p></body>');
-        toast('长按图片保存到相册');
-      } else {
-        toast('请允许弹窗以查看图片');
-      }
-    } else {
-      var link = document.createElement('a');
-      link.download = '日报_' + dateStr + '.png';
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast('日报图片已保存');
-    }
-  });
 
   /* ===== 统计更新 ===== */
   function updateStats(){
@@ -2747,7 +2543,7 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  var SW_VERSION = 'v14';
+  var SW_VERSION = 'v15';
   var LAST_SW = localStorage.getItem('sw_version') || '';
 
   if (LAST_SW !== SW_VERSION) {
@@ -2763,12 +2559,12 @@ if ('serviceWorker' in navigator) {
     }).then(function() {
       localStorage.setItem('sw_version', SW_VERSION);
       // 注册新 SW
-      navigator.serviceWorker.register('sw.js?v=14').catch(function(){});
+      navigator.serviceWorker.register('sw.js?v=15').catch(function(){});
       window.location.reload();
     }).catch(function(){});
   } else {
     // 版本相同：正常注册
-    navigator.serviceWorker.register('sw.js?v=14').then(function(reg) {
+    navigator.serviceWorker.register('sw.js?v=15').then(function(reg) {
       reg.addEventListener('updatefound', function() {
         var newWorker = reg.installing;
         if (newWorker) {
