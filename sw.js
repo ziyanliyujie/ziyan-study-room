@@ -1,9 +1,9 @@
 // 子言的考研空间 - Service Worker (PWA 离线缓存)
-const CACHE_NAME = 'ziyan-final-v4';
+const CACHE_NAME = 'ziyan-final-v5';
 const ASSETS = [
   './',
   './index.html',
-  './pwa.json',
+  './manifest.webmanifest',
   './assets/app-icon-192.png',
   './assets/app-icon-512.png',
   './assets/app-touch-icon.png',
@@ -64,8 +64,8 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // manifest/pwa.json 永远走网络，不缓存
-  if (url.pathname.endsWith('pwa.json') || url.pathname.endsWith('manifest.json')) {
+  // manifest 永远走网络，不缓存
+  if (url.pathname.endsWith('manifest.webmanifest') || url.pathname.endsWith('manifest.json') || url.pathname.endsWith('pwa.json')) {
     e.respondWith(fetch(req).catch(() => caches.match(req)));
     return;
   }

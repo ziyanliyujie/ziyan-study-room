@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/app-icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="assets/app-icon-512.png">
-  <link rel="manifest" href="pwa.json">
+  <link rel="manifest" href="manifest.webmanifest">
   <title>子言的考研空间 | 华工安全工程</title>
   <style>
     :root {
@@ -2529,7 +2529,7 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js?v=4').then(function(reg) {
+  navigator.serviceWorker.register('sw.js?v=5').then(function(reg) {
     // 检测到新 SW 就强制更新
     reg.addEventListener('updatefound', function() {
       var newWorker = reg.installing;
