@@ -2534,45 +2534,17 @@
       if (!file) throw new Error('未找到备份文件');
       var cloudData = JSON.parse(file.content);
 
-      if (!confirm('确定要从云端下载数据吗？这将覆盖当前本地数据。')){
-        btn.disabled = false; btn.textContent = '⬇ 下载同步';
-        setCloudMsg('已取消下载', false);
-        return;
-      }
+      // 直接覆盖并保存
       state = cloudData;
-      initState(); // 确保数据结构完整
+      initState();
       save();
-      // 重置日期选择器到今天
-      currentDay = new Date().getDay() || 7;
-      var ds = document.getElementById('day-selector');
-      if (ds) {
-        ds.innerHTML = '';
-        for (var d=1; d<=7; d++){
-          var dbtn = document.createElement('button');
-          dbtn.className = 'day-btn' + (d===currentDay ? ' active' : '');
-          dbtn.textContent = dayNames[d];
-          dbtn.dataset.day = d;
-          (function(dd){
-            dbtn.addEventListener('click', function(){
-              document.querySelectorAll('.day-btn').forEach(function(b){b.classList.remove('active')});
-              this.classList.add('active');
-              currentDay = +this.dataset.day;
-              renderDailyTasks();
-            });
-          })(d);
-          ds.appendChild(dbtn);
-        }
-      }
-      renderQuickTasks(); renderDailyTasks(); renderWeeklyTasks();
-      renderMonthlyTasks(); renderSubjects(); renderTimeline(); renderCalendar();
-      renderReport(); renderHomeReview(); updateCheckinBtn(); updateStats(); renderChart();
-      if (reviewText) reviewText.value = state.review || '';
+      localStorage.setItem('cloud_just_downloaded', '1');
 
-      btn.disabled = false; btn.textContent = '⬇ 下载同步';
       var time = new Date().toLocaleString('zh-CN', {hour12:false});
-      setCloudMsg('✓ 下载成功 ' + time, false);
-      setCloudStatus('已同步');
-      toast('云端数据已下载');
+      setCloudMsg('✓ 下载成功，正在刷新页面... ' + time, false);
+      toast('云端数据已下载，正在刷新...');
+      // 刷新页面，让所有渲染函数从头执行
+      setTimeout(function(){ window.location.reload(); }, 800);
     }).catch(function(err){
       btn.disabled = false; btn.textContent = '⬇ 下载同步';
       if (err.message.indexOf('404') > -1) localStorage.removeItem(GIST_ID_KEY);
@@ -2612,6 +2584,11 @@
   })();
 
   /* ===== 初始化 ===== */
+  // 如果刚从云端下载，显示提示
+  if (localStorage.getItem('cloud_just_downloaded') === '1'){
+    localStorage.removeItem('cloud_just_downloaded');
+    setTimeout(function(){ toast('✓ 云端数据已同步'); }, 500);
+  }
   renderQuickTasks();
   renderDailyTasks();
   renderWeeklyTasks();
@@ -2636,7 +2613,7 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js?v=7').then(function(reg) {
+  navigator.serviceWorker.register('sw.js?v=8').then(function(reg) {
     // 检测到新 SW 就强制更新
     reg.addEventListener('updatefound', function() {
       var newWorker = reg.installing;
