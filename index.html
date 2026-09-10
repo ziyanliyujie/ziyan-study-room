@@ -215,6 +215,7 @@
     .task-check svg{display:none;width:10px;height:10px;color:#fff}
     .task-subject{font-size:9px;padding:2px 6px;border-radius:6px;flex-shrink:0;font-weight:600;background:var(--accent-light);color:var(--accent2)}
     .task-text{font-size:12px;flex:1}
+    .task-est{font-size:9px;padding:2px 6px;border-radius:6px;flex-shrink:0;font-weight:500;background:var(--bg3);color:var(--muted);white-space:nowrap}
     .task-delete{font-size:14px;color:var(--danger);cursor:pointer;opacity:0.4;transition:opacity .2s;border:none;background:none;line-height:1}
     .task-delete:hover{opacity:1}
 
@@ -376,6 +377,7 @@
     .report-task-text{flex:1;font-size:12px;color:var(--ink2)}
     .report-task-text.done{text-decoration:line-through;color:var(--muted)}
     .report-task-subject{font-size:10px;color:var(--accent2);background:var(--accent-light);padding:1px 6px;border-radius:4px;white-space:nowrap}
+    .report-task-est{font-size:9px;color:var(--muted);white-space:nowrap}
     .report-mood{text-align:center;font-size:22px;margin-bottom:3px}
     .report-mood-label{font-size:11px;color:var(--muted);text-align:center}
     .report-review-box{background:var(--bg3);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--ink2);line-height:1.7;min-height:50px;white-space:pre-wrap}
@@ -553,6 +555,8 @@
           <div class="task-input-row">
             <select id="home-quick-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
             <input type="text" id="home-quick-input" placeholder="快速添加今日任务...">
+            <input type="number" id="home-quick-est" min="0" max="600" step="15" placeholder="用时" style="width:55px;padding:8px;border:1px solid var(--rule);border-radius:var(--radius-sm);font-size:12px;text-align:center;background:var(--bg3);color:var(--ink);">
+            <span style="font-size:11px;color:var(--muted);align-self:center;white-space:nowrap;">分钟</span>
             <button id="home-quick-add">添加</button>
           </div>
           <div class="task-list" id="home-quick-task-list"><p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">今天还没有任务，添加一个吧</p></div>
@@ -567,8 +571,6 @@
           <div class="collapse-body" id="home-review-body">
             <p style="font-size:12px;color:var(--muted);margin-bottom:8px;margin-top:4px;">今天学了什么？有什么收获和不足？</p>
             <textarea class="review-area" id="home-review-text" placeholder="例如：今天高数刷题效率不错，英语单词背了100个，下午有点困注意力不集中..."></textarea>
-            <p style="font-size:12px;color:var(--muted);margin:12px 0 6px;">💡 明日计划（保存后自动同步为明天的每日任务）</p>
-            <textarea class="review-area" id="home-tomorrow-plan" placeholder="每行一个任务，可用「科目：内容」格式，例如：&#10;数学：做2018年真题&#10;英语：背200个单词&#10;专业课：背诵第三章重点" style="min-height:80px;"></textarea>
             <button class="review-save" id="home-review-save">保存今日复盘</button>
           </div>
         </div>
@@ -633,6 +635,8 @@
             <div class="task-input-row">
               <select id="task-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
               <input type="text" id="task-input" placeholder="输入学习任务...">
+              <input type="number" id="task-est" min="0" max="600" step="15" placeholder="用时" style="width:55px;padding:8px;border:1px solid var(--rule);border-radius:var(--radius-sm);font-size:12px;text-align:center;background:var(--bg3);color:var(--ink);">
+              <span style="font-size:11px;color:var(--muted);align-self:center;white-space:nowrap;">分钟</span>
               <button id="task-add">添加</button>
             </div>
             <div class="task-list" id="task-list"><p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">暂无任务，添加一个吧</p></div>
@@ -1172,10 +1176,12 @@
 
   /* ===== 通用：任务项HTML ===== */
   function taskItemHtml(t, idx, type){
+    var estHtml = t.est ? '<span class="task-est">'+t.est+'min</span>' : '';
     return '<div class="task-item'+(t.done?' done':'')+'">'
       + '<div class="task-check'+(t.done?' done':'')+'" data-idx="'+idx+'" data-type="'+type+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>'
       + '<span class="task-subject">'+t.subject+'</span>'
       + '<span class="task-text">'+t.text+'</span>'
+      + estHtml
       + '<button class="task-delete" data-idx="'+idx+'" data-type="'+type+'">×</button>'
       + '</div>';
   }
@@ -1207,11 +1213,13 @@
   document.getElementById('home-quick-add').addEventListener('click', function(){
     var input = document.getElementById('home-quick-input');
     var subject = document.getElementById('home-quick-subject').value;
+    var estInput = document.getElementById('home-quick-est');
     if (!input.value.trim()) return;
     var key = getDayKey();
     if (!state.dailyTasks[key]) state.dailyTasks[key] = [];
-    state.dailyTasks[key].push({subject:subject, text:input.value.trim(), done:false});
-    save(); input.value = '';
+    var est = estInput ? parseInt(estInput.value) || 0 : 0;
+    state.dailyTasks[key].push({subject:subject, text:input.value.trim(), done:false, est:est});
+    save(); input.value = ''; if (estInput) estInput.value = '';
     renderQuickTasks(); renderDailyTasks(); updateStats(); renderReport();
     toast('任务已添加');
   });
@@ -1244,11 +1252,13 @@
   document.getElementById('task-add').addEventListener('click', function(){
     var input = document.getElementById('task-input');
     var subject = document.getElementById('task-subject').value;
+    var estInput = document.getElementById('task-est');
     if (!input.value.trim()) return;
     var key = getDayKey();
     if (!state.dailyTasks[key]) state.dailyTasks[key] = [];
-    state.dailyTasks[key].push({subject:subject, text:input.value.trim(), done:false});
-    save(); input.value = '';
+    var est = estInput ? parseInt(estInput.value) || 0 : 0;
+    state.dailyTasks[key].push({subject:subject, text:input.value.trim(), done:false, est:est});
+    save(); input.value = ''; if (estInput) estInput.value = '';
     renderDailyTasks(); renderQuickTasks(); updateStats();
     toast('任务已添加');
   });
@@ -1473,59 +1483,18 @@
   }
   setupHoursInput();
 
-  /* 每日复盘（首页）+ 明日计划联动 */
+  /* 每日复盘（首页） */
   var homeReviewText = document.getElementById('home-review-text');
-  var homeTomorrowPlan = document.getElementById('home-tomorrow-plan');
   function renderHomeReview(){
     var today = todayKey();
     if (homeReviewText) homeReviewText.value = state.checkin.reviews[today] || '';
-    if (homeTomorrowPlan) homeTomorrowPlan.value = state.checkin.tomorrowPlans[today] || '';
   }
   renderHomeReview();
   document.getElementById('home-review-save').addEventListener('click', function(){
-    var today = todayKey();
-    var tomorrow = getTomorrowKey();
-    // 保存复盘
-    state.checkin.reviews[today] = homeReviewText.value;
-    // 保存明日计划原文
-    var planText = homeTomorrowPlan ? homeTomorrowPlan.value : '';
-    state.checkin.tomorrowPlans[today] = planText;
-
-    // 将明日计划解析为明天的每日任务
-    if (planText.trim()) {
-      var lines = planText.trim().split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l; });
-      var validSubjects = ['数学','专业课','英语','政治','其他'];
-      var newTasks = [];
-      lines.forEach(function(line){
-        var subject = '其他';
-        var text = line;
-        // 匹配「科目：内容」或「科目:内容」格式
-        var match = line.match(/^(数学|专业课|英语|政治|其他)\s*[:：]\s*(.+)/);
-        if (match) {
-          subject = match[1];
-          text = match[2].trim();
-        } else {
-          // 也匹配数字序号开头的行，去掉序号
-          text = line.replace(/^\d+[.、\)）]\s*/, '');
-        }
-        if (text) newTasks.push({ subject: subject, text: text, done: false });
-      });
-
-      if (newTasks.length > 0) {
-        // 保留明天已有的任务（如果已手动添加过），追加新的
-        if (!state.dailyTasks[tomorrow]) state.dailyTasks[tomorrow] = [];
-        // 移除之前由明日计划同步过来的任务（标记为 _fromPlan）
-        state.dailyTasks[tomorrow] = state.dailyTasks[tomorrow].filter(function(t){ return !t._fromPlan; });
-        // 添加新的计划任务
-        newTasks.forEach(function(t){ t._fromPlan = true; state.dailyTasks[tomorrow].push(t); });
-      }
-    }
-
+    state.checkin.reviews[todayKey()] = homeReviewText.value;
     save();
     renderReport();
-    renderQuickTasks();
-    renderDailyTasks();
-    toast('复盘和明日计划已保存');
+    toast('今日复盘已保存');
   });
 
   /* ===== 周复盘 ===== */
@@ -1591,9 +1560,11 @@
     } else {
       tasksHtml = '<ul class="report-task-list">';
       allTasks.forEach(function(t){
+        var estHtml = t.est ? '<span class="report-task-est">'+t.est+'min</span>' : '';
         tasksHtml += '<li class="report-task-item">'
           + '<div class="report-task-dot '+(t.done?'done':'undone')+'"></div>'
           + '<span class="report-task-text '+(t.done?'done':'')+'">'+t.text+'</span>'
+          + estHtml
           + '<span class="report-task-subject">'+t.subject+'</span>'
           + '</li>';
       });
@@ -1659,7 +1630,9 @@
     lines.push('✅今日完成');
     if (doneTasks.length > 0) {
       doneTasks.forEach(function(t, i){
-        lines.push(String.fromCharCode(0x2460 + i) + ' ' + t.subject + '：' + t.text);
+        var taskLine = String.fromCharCode(0x2460 + i) + ' ' + t.subject + '：' + t.text;
+        if (t.est) taskLine += '（' + t.est + 'min）';
+        lines.push(taskLine);
       });
     } else {
       lines.push('①');
@@ -1671,23 +1644,11 @@
     // 今日复盘
     lines.push('🤩今日复盘');
     if (review.trim()) {
-      var reviewLines = review.trim().split('\n').filter(function(l){return l.trim();});
-      if (reviewLines.length > 0) {
-        reviewLines.forEach(function(l, i){
-          if (i < 3) lines.push(String.fromCharCode(0x2460 + i) + ' ' + l.trim());
-        });
-        for (var j = reviewLines.length; j < 3; j++) {
-          lines.push(String.fromCharCode(0x2460 + j));
-        }
-      } else {
-        lines.push('①');
-        lines.push('②');
-        lines.push('③');
-      }
+      review.trim().split('\n').forEach(function(l){
+        if (l.trim()) lines.push(l.trim());
+      });
     } else {
-      lines.push('①');
-      lines.push('②');
-      lines.push('③');
+      lines.push('（暂无）');
     }
     lines.push('');
 
@@ -1706,7 +1667,11 @@
     }
     if (planTasks.length > 0) {
       planTasks.forEach(function(t, i){
-        if (i < 3) lines.push(String.fromCharCode(0x2460 + i) + ' ' + t.subject + '：' + t.text);
+        if (i < 3) {
+          var taskLine = String.fromCharCode(0x2460 + i) + ' ' + t.subject + '：' + t.text;
+          if (t.est) taskLine += '（' + t.est + 'min）';
+          lines.push(taskLine);
+        }
       });
       for (var k = planTasks.length; k < 3; k++) {
         lines.push(String.fromCharCode(0x2460 + k));
