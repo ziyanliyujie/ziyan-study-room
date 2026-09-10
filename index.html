@@ -852,7 +852,8 @@
               </div>
               <p id="cloud-sync-msg" style="font-size:11px;color:var(--ink2);margin-top:8px;text-align:center;"></p>
               <p style="font-size:10px;color:var(--ink3);margin-top:8px;line-height:1.5;">
-                获取 Token：github.com/settings/tokens → Generate new token (classic) → 勾选 <b>gist</b> → 生成
+                获取 Token：github.com/settings/tokens → <b>Generate new token (classic)</b> → 勾选 <b>gist</b> → 生成<br>
+                注意：必须用 classic token，不要用 fine-grained token
               </p>
             </div>
           </div>
@@ -2231,32 +2232,61 @@
 
   function cloudErrMsg(err){
     var msg = err.message || '未知错误';
-    if (msg.indexOf('401') > -1) return 'Token 无效或已过期';
-    if (msg.indexOf('403') > -1) return 'Token 权限不足，请确保勾选了 gist 权限';
+    if (msg.indexOf('401') > -1) return 'Token 无效或已过期，请重新生成';
+    if (msg.indexOf('403') > -1) return 'Token 权限不足或被限流，请确保勾选 gist 权限（classic token）';
     if (msg.indexOf('404') > -1) return 'Gist 不存在，可能已被删除或 Token 已更换';
-    if (msg.indexOf('Failed to fetch') > -1) return '网络连接失败，请检查网络';
+    if (msg.indexOf('Failed to fetch') > -1 || msg.indexOf('NetworkError') > -1) return '网络连接失败（可能被墙），请检查网络';
+    if (msg.indexOf('timeout') > -1 || msg.indexOf('aborted') > -1) return '请求超时，请检查网络后重试';
+    if (msg.indexOf('Unexpected token') > -1) return '响应解析失败，GitHub API 可能不可用';
     return msg;
   }
 
-  /* 搜索已有 Gist */
-  function searchGist(token){
-    return fetch(GIST_API + '?per_page=100', {
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Accept': 'application/vnd.github+json'
-      },
-      cache: 'no-store'
-    }).then(function(r){
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    }).then(function(gists){
-      for (var i = 0; i < gists.length; i++){
-        if (gists[i].files && gists[i].files[GIST_FILENAME]){
-          return gists[i].id;
-        }
+  /* 带超时和错误处理的 fetch */
+  function cloudFetch(url, opts, timeoutMs){
+    timeoutMs = timeoutMs || 20000;
+    var ctrl = new AbortController();
+    var timer = setTimeout(function(){ ctrl.abort(); }, timeoutMs);
+    opts = opts || {};
+    opts.signal = ctrl.signal;
+    if (!opts.headers) opts.headers = {};
+    opts.headers['Accept'] = opts.headers['Accept'] || 'application/vnd.github+json';
+    opts.headers['X-GitHub-Api-Version'] = '2022-11-28';
+    opts.cache = 'no-store';
+    return fetch(url, opts).then(function(r){
+      clearTimeout(timer);
+      if (!r.ok){
+        return r.text().then(function(body){
+          var detail = '';
+          try { detail = JSON.parse(body).message || ''; } catch(e){ detail = body.substring(0,100); }
+          throw new Error('HTTP ' + r.status + (detail ? ': ' + detail : ''));
+        });
       }
-      return null;
+      return r.json();
+    }).catch(function(err){
+      clearTimeout(timer);
+      throw err;
     });
+  }
+
+  /* 搜索已有 Gist（支持分页） */
+  function searchGist(token){
+    function searchPage(page){
+      return cloudFetch(GIST_API + '?per_page=100&page=' + page, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }, 15000).then(function(gists){
+        for (var i = 0; i < gists.length; i++){
+          if (gists[i].files){
+            var files = gists[i].files;
+            for (var fname in files){
+              if (fname === GIST_FILENAME) return gists[i].id;
+            }
+          }
+        }
+        if (gists.length < 100) return null;
+        return searchPage(page + 1);
+      });
+    }
+    return searchPage(1);
   }
 
   /* 保存 Token */
@@ -2388,19 +2418,14 @@
     };
     payload.files[GIST_FILENAME] = { content: JSON.stringify(uploadData, null, 2) };
 
-    fetch(url, {
+    cloudFetch(url, {
       method: method,
       headers: {
         'Authorization': 'Bearer ' + token,
-        'Accept': 'application/vnd.github+json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(payload),
-      cache: 'no-store'
-    }).then(function(r){
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    }).then(function(data){
+      body: JSON.stringify(payload)
+    }, 30000).then(function(data){
       if (data.id && !gistId){
         localStorage.setItem(GIST_ID_KEY, data.id);
       }
@@ -2453,31 +2478,21 @@
     btn.disabled = true; btn.textContent = '下载中...';
     setCloudMsg('正在从 GitHub Gist 下载数据...', false);
 
-    fetch(GIST_API + '/' + gistId, {
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Accept': 'application/vnd.github+json'
-      },
-      cache: 'no-store'
-    }).then(function(r){
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    }).then(function(data){
+    cloudFetch(GIST_API + '/' + gistId, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    }, 20000).then(function(data){
       var file = data.files && data.files[GIST_FILENAME];
       if (!file) throw new Error('未找到备份文件');
       var cloudData = JSON.parse(file.content);
 
-      // 全量覆盖：云端数据直接替换本地
-      state = cloudData;
-      initState();
-      delete state._lastSync; // 清理临时字段，避免影响启动检查
+      // 智能合并：合并云端数据到本地，不覆盖本地较新的数据
+      mergeState(cloudData);
       save();
       localStorage.setItem('cloud_just_downloaded', '1');
 
       var time = new Date().toLocaleString('zh-CN', {hour12:false});
-      setCloudMsg('✓ 下载成功，正在刷新页面... ' + time, false);
+      setCloudMsg('✓ 下载成功（已智能合并），正在刷新页面... ' + time, false);
       toast('云端数据已下载，正在刷新...');
-      // 刷新页面，让所有渲染函数从头执行
       setTimeout(function(){ window.location.reload(); }, 800);
     }).catch(function(err){
       btn.disabled = false; btn.textContent = '⬇ 下载同步';
@@ -2494,16 +2509,9 @@
     var token = getCloudToken();
     var gistId = getGistId();
     if (!token || !gistId) return;
-    fetch(GIST_API + '/' + gistId, {
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Accept': 'application/vnd.github+json'
-      },
-      cache: 'no-store'
-    }).then(function(r){
-      if (!r.ok) return null;
-      return r.json();
-    }).then(function(data){
+    cloudFetch(GIST_API + '/' + gistId, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    }, 10000).then(function(data){
       if (!data || !data.files) return;
       var file = data.files[GIST_FILENAME];
       if (!file) return;
