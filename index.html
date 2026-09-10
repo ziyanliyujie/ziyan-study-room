@@ -191,12 +191,14 @@
     .progress-input input[type="range"]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent2);border:none;box-shadow:0 1px 4px rgba(0,0,0,0.3)}
 
     /* ===== 任务列表 ===== */
-    .task-input-row{display:flex;gap:6px;margin-bottom:10px}
-    .task-input-row select,.task-input-row input[type="text"]{padding:8px 12px;border:1px solid var(--rule);border-radius:var(--radius-sm);font-size:12px;font-family:var(--font);color:var(--ink);background:var(--bg3);transition:border-color .25s var(--ease-out)}
-    .task-input-row input[type="text"]:focus,.task-input-row select:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
-    .task-input-row input[type="text"]{flex:1}
-    .task-input-row select{width:80px}
-    .task-input-row button{padding:8px 14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;transition:all .25s var(--ease-out);font-weight:600;box-shadow:var(--shadow-sm)}
+    .task-input-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+    .task-input-row select,.task-input-row input[type="text"],.task-input-row input[type="number"]{padding:8px 10px;border:1px solid var(--rule);border-radius:var(--radius-sm);font-size:12px;font-family:var(--font);color:var(--ink);background:var(--bg3);transition:border-color .25s var(--ease-out)}
+    .task-input-row input[type="text"]:focus,.task-input-row select:focus,.task-input-row input[type="number"]:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
+    .task-input-row input[type="text"]{flex:1;min-width:120px}
+    .task-input-row select{width:72px;flex-shrink:0}
+    .task-input-row .task-est-input{width:48px;flex-shrink:0;text-align:center}
+    .task-input-row .task-est-label{font-size:10px;color:var(--muted);align-self:center;white-space:nowrap;flex-shrink:0;margin-right:2px}
+    .task-input-row button{padding:8px 14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;transition:all .25s var(--ease-out);font-weight:600;box-shadow:var(--shadow-sm);flex-shrink:0}
     .task-input-row button:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,0.3)}
     .task-input-row button:active{transform:translateY(0)}
 
@@ -555,8 +557,8 @@
           <div class="task-input-row">
             <select id="home-quick-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
             <input type="text" id="home-quick-input" placeholder="快速添加今日任务...">
-            <input type="number" id="home-quick-est" min="0" max="600" step="15" placeholder="用时" style="width:55px;padding:8px;border:1px solid var(--rule);border-radius:var(--radius-sm);font-size:12px;text-align:center;background:var(--bg3);color:var(--ink);">
-            <span style="font-size:11px;color:var(--muted);align-self:center;white-space:nowrap;">分钟</span>
+            <input type="number" class="task-est-input" id="home-quick-est" min="0" max="600" step="15" placeholder="用时">
+            <span class="task-est-label">分</span>
             <button id="home-quick-add">添加</button>
           </div>
           <div class="task-list" id="home-quick-task-list"><p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">今天还没有任务，添加一个吧</p></div>
@@ -635,8 +637,8 @@
             <div class="task-input-row">
               <select id="task-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
               <input type="text" id="task-input" placeholder="输入学习任务...">
-              <input type="number" id="task-est" min="0" max="600" step="15" placeholder="用时" style="width:55px;padding:8px;border:1px solid var(--rule);border-radius:var(--radius-sm);font-size:12px;text-align:center;background:var(--bg3);color:var(--ink);">
-              <span style="font-size:11px;color:var(--muted);align-self:center;white-space:nowrap;">分钟</span>
+              <input type="number" class="task-est-input" id="task-est" min="0" max="600" step="15" placeholder="用时">
+              <span class="task-est-label">分</span>
               <button id="task-add">添加</button>
             </div>
             <div class="task-list" id="task-list"><p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">暂无任务，添加一个吧</p></div>
