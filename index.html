@@ -1574,41 +1574,84 @@
   /* ===== 日报分享 ===== */
   function buildReportText(){
     var d = getReportDate(reportOffset);
-    var dateStr = d.toISOString().slice(0,10);
-    var weekNames = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
-    var hours = state.checkin.hours[dateStr] || 0;
-    var mood = state.checkin.moods[dateStr] || '未记录';
+    var dateStr = (d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
+    var weekNames = ['日','一','二','三','四','五','六'];
     var review = state.checkin.reviews[dateStr] || '';
     var tasks = state.dailyTasks[dateStr] || [];
-    var done = tasks.filter(function(t){return t.done}).length;
-    var pct = tasks.length > 0 ? Math.round(done/tasks.length*100) : 0;
-    var streak = getStreakAt(dateStr);
-    var checkedIn = state.checkin.dates.includes(dateStr);
+    var doneTasks = tasks.filter(function(t){return t.done;});
+    var undoneTasks = tasks.filter(function(t){return !t.done;});
+
+    // 考研倒计时
+    var examDiff = Math.floor((examDate - d) / 86400000);
+    var countdownStr = examDiff > 0 ? '距考研还有' + examDiff + '天' : (examDiff === 0 ? '今天考研！' : '考研已结束');
 
     var lines = [];
-    lines.push('📰 子言的考研空间 · 每日日报');
-    lines.push('━━━━━━━━━━━━━━━━━━');
-    lines.push('📅 ' + (d.getMonth()+1) + '月' + d.getDate() + '日 ' + weekNames[d.getDay()]);
+    // 标题行
+    lines.push((d.getMonth()+1) + '.' + d.getDate() + ' 星期' + weekNames[d.getDay()] + ' ' + countdownStr);
     lines.push('');
-    lines.push('⏱️ 学习时长：' + hours.toFixed(1) + ' 小时');
-    lines.push('📋 任务完成：' + done + '/' + tasks.length + '（' + pct + '%）');
-    lines.push('🔥 连续打卡：' + streak + ' 天' + (checkedIn ? '（今日已打卡）' : '（今日未打卡）'));
-    lines.push('😊 今日状态：' + mood);
-    lines.push('');
-    if (tasks.length > 0) {
-      lines.push('【今日任务】');
-      tasks.forEach(function(t){
-        lines.push((t.done ? '✅' : '⬜') + ' [' + t.subject + '] ' + t.text);
+
+    // 今日完成
+    lines.push('✅今日完成');
+    if (doneTasks.length > 0) {
+      doneTasks.forEach(function(t, i){
+        lines.push(String.fromCharCode(0x2460 + i) + ' ' + t.subject + '：' + t.text);
       });
-      lines.push('');
+    } else {
+      lines.push('①');
+      lines.push('②');
+      lines.push('③');
     }
+    lines.push('');
+
+    // 今日复盘
+    lines.push('🤩今日复盘');
     if (review.trim()) {
-      lines.push('【每日复盘】');
-      lines.push(review.trim());
-      lines.push('');
+      var reviewLines = review.trim().split('\n').filter(function(l){return l.trim();});
+      if (reviewLines.length > 0) {
+        reviewLines.forEach(function(l, i){
+          if (i < 3) lines.push(String.fromCharCode(0x2460 + i) + ' ' + l.trim());
+        });
+        for (var j = reviewLines.length; j < 3; j++) {
+          lines.push(String.fromCharCode(0x2460 + j));
+        }
+      } else {
+        lines.push('①');
+        lines.push('②');
+        lines.push('③');
+      }
+    } else {
+      lines.push('①');
+      lines.push('②');
+      lines.push('③');
     }
-    lines.push('━━━━━━━━━━━━━━━━━━');
-    lines.push('子言的考研空间 · 华工安全工程考研');
+    lines.push('');
+
+    // 明日计划
+    lines.push('💡明日计划');
+    // 找明天的任务
+    var tomorrow = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+    var tomorrowStr = tomorrow.getFullYear()+'-'+String(tomorrow.getMonth()+1).padStart(2,'0')+'-'+String(tomorrow.getDate()).padStart(2,'0');
+    var tomorrowTasks = state.dailyTasks[tomorrowStr] || [];
+    // 也加上今天未完成的任务
+    var planTasks = tomorrowTasks.slice();
+    if (undoneTasks.length > 0) {
+      undoneTasks.forEach(function(t){
+        planTasks.push(t);
+      });
+    }
+    if (planTasks.length > 0) {
+      planTasks.forEach(function(t, i){
+        if (i < 3) lines.push(String.fromCharCode(0x2460 + i) + ' ' + t.subject + '：' + t.text);
+      });
+      for (var k = planTasks.length; k < 3; k++) {
+        lines.push(String.fromCharCode(0x2460 + k));
+      }
+    } else {
+      lines.push('①');
+      lines.push('②');
+      lines.push('③');
+    }
+
     return lines.join('\n');
   }
 
@@ -2698,7 +2741,7 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js?v=11').then(function(reg) {
+  navigator.serviceWorker.register('sw.js?v=12').then(function(reg) {
     // 检测到新 SW 就强制更新
     reg.addEventListener('updatefound', function() {
       var newWorker = reg.installing;
