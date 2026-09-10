@@ -2457,7 +2457,8 @@
         'Accept': 'application/vnd.github+json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      cache: 'no-store'
     }).then(function(r){
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
@@ -2472,7 +2473,8 @@
       setCloudStatus('已同步');
       toast('数据已上传到云端');
     }).catch(function(err){
-      save();
+      // 修复：上传失败时不应保存带 _lastSync 的 state
+      delete state._lastSync;
       btn.disabled = false; btn.textContent = '⬆ 上传同步';
       setCloudMsg('上传失败：' + cloudErrMsg(err), true);
     });
@@ -2492,7 +2494,8 @@
       headers: {
         'Authorization': 'Bearer ' + token,
         'Accept': 'application/vnd.github+json'
-      }
+      },
+      cache: 'no-store'
     }).then(function(r){
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
@@ -2527,6 +2530,34 @@
 
   /* 启动时检查云同步状态 */
   updateCloudSyncUI();
+
+  /* 启动时静默检查云端是否有更新 */
+  (function checkCloudUpdate(){
+    var token = getCloudToken();
+    var gistId = getGistId();
+    if (!token || !gistId) return;
+    fetch(GIST_API + '/' + gistId, {
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/vnd.github+json'
+      },
+      cache: 'no-store'
+    }).then(function(r){
+      if (!r.ok) return null;
+      return r.json();
+    }).then(function(data){
+      if (!data || !data.files) return;
+      var file = data.files[GIST_FILENAME];
+      if (!file) return;
+      var cloudData = JSON.parse(file.content);
+      var cloudSync = cloudData._lastSync || 0;
+      var localSync = state._lastSync || 0;
+      if (cloudSync > localSync){
+        setCloudStatus('云端有更新');
+        setCloudMsg('检测到云端有较新数据，建议点击「⬇ 下载同步」', false);
+      }
+    }).catch(function(){ /* 静默失败，不打扰用户 */ });
+  })();
 
   /* ===== 初始化 ===== */
   renderQuickTasks();

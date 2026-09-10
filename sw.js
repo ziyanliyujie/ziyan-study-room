@@ -1,5 +1,5 @@
 // 子言的考研空间 - Service Worker (PWA 离线缓存)
-const CACHE_NAME = 'ziyan-study-room-v3';
+const CACHE_NAME = 'ziyan-study-room-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -29,15 +29,33 @@ self.addEventListener('activate', (e) => {
   self.clients.claim();
 });
 
-// 请求拦截：缓存优先，回退网络
+// 请求拦截
 self.addEventListener('fetch', (e) => {
-  if (e.request.method !== 'GET') return;
+  var req = e.request;
+
+  // 跳过非 GET 请求（POST/PATCH 用于云同步上传）
+  if (req.method !== 'GET') return;
+
+  var url = new URL(req.url);
+
+  // 关键修复：跳过所有跨域 API 请求（GitHub Gist API 等），不缓存、不拦截
+  if (url.origin !== self.location.origin) return;
+
   e.respondWith(
-    caches.match(e.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(e.request).then((res) => {
+    caches.match(req).then((cached) => {
+      if (cached) {
+        // 缓存命中：后台同时更新缓存（stale-while-revalidate）
+        fetch(req).then((res) => {
+          if (res && res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+          }
+        }).catch(() => {});
+        return cached;
+      }
+      return fetch(req).then((res) => {
         const clone = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+        caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
         return res;
       }).catch(() => caches.match('./index.html'));
     })
