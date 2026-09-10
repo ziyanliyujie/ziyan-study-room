@@ -466,7 +466,7 @@
     <!-- 顶部状态栏 -->
     <div class="topbar">
       <div class="topbar-left">
-        <img class="topbar-logo" src="assets/app-icon-192.png" alt="华工校徽" onerror="this.style.display='none'">
+        <img class="topbar-logo" src="assets/scut-seal-new.jpg" alt="华工校徽" onerror="this.style.display='none'">
         <div>
           <div class="topbar-title" id="page-title">计划</div>
           <div class="topbar-date" id="topbar-date">2026年9月10日 星期四</div>
@@ -562,16 +562,48 @@
           </div>
         </div>
 
-        <!-- 每日学习计划 -->
+        <!-- 每日日报 -->
         <div class="card">
-          <div class="card-title"><span>📅 每日学习计划</span><span class="tag" id="daily-tag">0/0 完成</span></div>
-          <div class="day-selector" id="day-selector"></div>
-          <div class="task-input-row">
-            <select id="task-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
-            <input type="text" id="task-input" placeholder="输入学习任务...">
-            <button id="task-add">添加</button>
+          <div class="card-title collapse-header" id="data-report-toggle">
+            <span>📰 每日日报</span>
+            <span class="collapse-icon" id="data-report-icon">▼</span>
           </div>
-          <div class="task-list" id="task-list"><p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">暂无任务，添加一个吧</p></div>
+          <div class="collapse-body" id="data-report-body">
+            <div class="report-paper" style="margin-top:12px;padding:16px 20px;">
+              <div class="report-header">
+                <div class="report-date" id="report-date">9月10日</div>
+                <div class="report-weekday" id="report-weekday">2026年 · 星期四</div>
+                <div class="report-nav">
+                  <button id="report-prev">‹</button>
+                  <button id="report-today" style="width:auto;padding:0 10px;font-size:11px;">今天</button>
+                  <button id="report-next">›</button>
+                </div>
+              </div>
+              <div class="report-stats-row">
+                <div class="report-stat"><div class="report-stat-num" id="report-hours">0.0h</div><div class="report-stat-label">学习时长</div></div>
+                <div class="report-stat"><div class="report-stat-num" id="report-completion">0%</div><div class="report-stat-label">任务完成率</div></div>
+                <div class="report-stat"><div class="report-stat-num" id="report-streak">0</div><div class="report-stat-label">连续打卡</div></div>
+              </div>
+              <div class="report-section">
+                <div class="report-section-title">📋 今日任务</div>
+                <div id="report-tasks"><div class="report-empty">这一天没有记录任务</div></div>
+              </div>
+              <div class="report-section">
+                <div class="report-section-title">😊 今日状态</div>
+                <div class="report-mood" id="report-mood">🤷</div>
+                <div class="report-mood-label" id="report-mood-label">未记录</div>
+              </div>
+              <div class="report-section">
+                <div class="report-section-title">📝 每日复盘</div>
+                <div class="report-review-box" id="report-review"><span class="report-empty">这一天没有写复盘</span></div>
+              </div>
+              <div class="report-footer" id="report-footer">子言的考研空间 · 每日日报 · 2026/09/10 · 未打卡</div>
+              <div class="report-share-bar">
+                <button class="share-btn" id="share-copy">📋 复制</button>
+                <button class="share-btn" id="share-image">🖼️ 保存图片</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -583,10 +615,17 @@
           <div class="plan-tab" data-plan="monthly">月计划</div>
         </div>
 
-        <!-- 日计划（已移至首页底部） -->
+        <!-- 日计划 -->
         <div class="plan-content" id="plan-daily">
           <div class="card">
-            <p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">每日学习计划已移至首页底部，请返回首页查看 ✨</p>
+            <div class="card-title"><span>📅 每日学习计划</span><span class="tag" id="daily-tag">0/0 完成</span></div>
+            <div class="day-selector" id="day-selector"></div>
+            <div class="task-input-row">
+              <select id="task-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
+              <input type="text" id="task-input" placeholder="输入学习任务...">
+              <button id="task-add">添加</button>
+            </div>
+            <div class="task-list" id="task-list"><p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">暂无任务，添加一个吧</p></div>
           </div>
         </div>
 
@@ -748,49 +787,6 @@
           </div>
         </div>
 
-        <!-- 每日日报入口 -->
-        <div class="card">
-          <div class="card-title collapse-header" id="data-report-toggle">
-            <span>📰 每日日报</span>
-            <span class="collapse-icon" id="data-report-icon">▼</span>
-          </div>
-          <div class="collapse-body" id="data-report-body">
-            <div class="report-paper" style="margin-top:12px;padding:16px 20px;">
-              <div class="report-header">
-                <div class="report-date" id="report-date">9月10日</div>
-                <div class="report-weekday" id="report-weekday">2026年 · 星期四</div>
-                <div class="report-nav">
-                  <button id="report-prev">‹</button>
-                  <button id="report-today" style="width:auto;padding:0 10px;font-size:11px;">今天</button>
-                  <button id="report-next">›</button>
-                </div>
-              </div>
-              <div class="report-stats-row">
-                <div class="report-stat"><div class="report-stat-num" id="report-hours">0.0h</div><div class="report-stat-label">学习时长</div></div>
-                <div class="report-stat"><div class="report-stat-num" id="report-completion">0%</div><div class="report-stat-label">任务完成率</div></div>
-                <div class="report-stat"><div class="report-stat-num" id="report-streak">0</div><div class="report-stat-label">连续打卡</div></div>
-              </div>
-              <div class="report-section">
-                <div class="report-section-title">📋 今日任务</div>
-                <div id="report-tasks"><div class="report-empty">这一天没有记录任务</div></div>
-              </div>
-              <div class="report-section">
-                <div class="report-section-title">😊 今日状态</div>
-                <div class="report-mood" id="report-mood">🤷</div>
-                <div class="report-mood-label" id="report-mood-label">未记录</div>
-              </div>
-              <div class="report-section">
-                <div class="report-section-title">📝 每日复盘</div>
-                <div class="report-review-box" id="report-review"><span class="report-empty">这一天没有写复盘</span></div>
-              </div>
-              <div class="report-footer" id="report-footer">子言的考研空间 · 每日日报 · 2026/09/10 · 未打卡</div>
-              <div class="report-share-bar">
-                <button class="share-btn" id="share-copy">📋 复制</button>
-                <button class="share-btn" id="share-image">🖼️ 保存图片</button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- ===== Tab 5: 我的 ===== -->
