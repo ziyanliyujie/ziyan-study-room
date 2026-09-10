@@ -2353,6 +2353,27 @@
     return msg;
   }
 
+  /* 搜索已有 Gist */
+  function searchGist(token){
+    return fetch(GIST_API + '?per_page=100', {
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/vnd.github+json'
+      },
+      cache: 'no-store'
+    }).then(function(r){
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function(gists){
+      for (var i = 0; i < gists.length; i++){
+        if (gists[i].files && gists[i].files[GIST_FILENAME]){
+          return gists[i].id;
+        }
+      }
+      return null;
+    });
+  }
+
   /* 保存 Token */
   document.getElementById('cloud-save-token').addEventListener('click', function(){
     var input = document.getElementById('cloud-token-input');
@@ -2360,9 +2381,24 @@
     if (!val){ setCloudMsg('请先粘贴 Token', true); return; }
     if (val.indexOf('****') > -1){ setCloudMsg('Token 未变更', false); return; }
     localStorage.setItem(CLOUD_TOKEN_KEY, val);
+    localStorage.removeItem(GIST_ID_KEY); // 清除旧 gistId，重新搜索
     updateCloudSyncUI();
-    setCloudMsg('Token 已保存到本地', false);
-    toast('Token 已保存');
+    setCloudMsg('Token 已保存，正在搜索云端数据...', false);
+    // 自动搜索已有的 Gist
+    searchGist(val).then(function(gid){
+      if (gid){
+        localStorage.setItem(GIST_ID_KEY, gid);
+        updateCloudSyncUI();
+        setCloudMsg('✓ 已找到云端备份，可直接点击下载', false);
+        toast('Token 已保存，找到云端数据');
+      } else {
+        setCloudMsg('云端暂无备份数据，可点击上传同步创建', false);
+        toast('Token 已保存');
+      }
+    }).catch(function(err){
+      setCloudMsg('Token 已保存，但搜索云端失败：' + cloudErrMsg(err), true);
+      toast('Token 已保存');
+    });
   });
 
   /* 清除 Token */
@@ -2429,9 +2465,34 @@
   document.getElementById('cloud-download').addEventListener('click', function(){
     var token = getCloudToken();
     if (!token){ setCloudMsg('请先保存 Token', true); return; }
-    var gistId = getGistId();
-    if (!gistId){ setCloudMsg('尚未上传过数据，请先点击上传同步', true); return; }
     var btn = this;
+    var gistId = getGistId();
+
+    // 如果没有 gistId，先搜索
+    if (!gistId){
+      btn.disabled = true; btn.textContent = '搜索中...';
+      setCloudMsg('正在搜索云端数据...', false);
+      searchGist(token).then(function(gid){
+        if (!gid){
+          btn.disabled = false; btn.textContent = '⬇ 下载同步';
+          setCloudMsg('云端暂无备份数据，请先点击上传同步', true);
+          return;
+        }
+        localStorage.setItem(GIST_ID_KEY, gid);
+        updateCloudSyncUI();
+        // 找到后继续下载
+        doDownload(token, gid, btn);
+      }).catch(function(err){
+        btn.disabled = false; btn.textContent = '⬇ 下载同步';
+        setCloudMsg('搜索云端失败：' + cloudErrMsg(err), true);
+      });
+      return;
+    }
+
+    doDownload(token, gistId, btn);
+  });
+
+  function doDownload(token, gistId, btn){
     btn.disabled = true; btn.textContent = '下载中...';
     setCloudMsg('正在从 GitHub Gist 下载数据...', false);
 
@@ -2471,7 +2532,7 @@
       if (err.message.indexOf('404') > -1) localStorage.removeItem(GIST_ID_KEY);
       setCloudMsg('下载失败：' + cloudErrMsg(err), true);
     });
-  });
+  }
 
   /* 启动时检查云同步状态 */
   updateCloudSyncUI();
