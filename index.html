@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="考研空间">
   <meta name="theme-color" content="#eef2f9">
   <meta name="description" content="子言的考研空间 - 考研备考百日冲刺，华工安全工程">
@@ -952,7 +952,7 @@
     if (label) label.textContent = isLight ? '浅色模式' : '深色模式';
     if (icon) icon.textContent = isLight ? '☀️' : '🌙';
     var tc = document.querySelector('meta[name="theme-color"]');
-    if (tc) tc.setAttribute('content', isLight ? '#eef2f9' : '#0f234b');
+    if (tc) tc.setAttribute('content', isLight ? '#eef2f9' : '#0a0f1e');
   }
   document.getElementById('profile-theme-btn').addEventListener('click', function(){
     var isLight = document.body.classList.toggle('light');
