@@ -1,10 +1,11 @@
 // 子言的考研空间 - Service Worker (PWA 离线缓存)
-const CACHE_NAME = 'ziyan-study-room-v5';
+const CACHE_NAME = 'ziyan-study-room-v6';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './assets/scut-logo.jpg',
+  './assets/avatar.jpg',
   './assets/hero-bg-1.jpg',
   './assets/hero-bg-2.jpg',
   './assets/hero-bg-3.jpg',
