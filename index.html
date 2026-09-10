@@ -2512,13 +2512,15 @@
       if (!file) throw new Error('未找到备份文件');
       var cloudData = JSON.parse(file.content);
 
-      // 智能合并：合并云端数据到本地，不覆盖本地较新的数据
-      mergeState(cloudData);
+      // 覆盖式同步：云端数据直接替换本地
+      state = cloudData;
+      initState();
+      delete state._lastSync;
       save();
       localStorage.setItem('cloud_just_downloaded', '1');
 
       var time = new Date().toLocaleString('zh-CN', {hour12:false});
-      setCloudMsg('✓ 下载成功（已智能合并），正在刷新页面... ' + time, false);
+      setCloudMsg('✓ 下载成功（已覆盖本地），正在刷新页面... ' + time, false);
       toast('云端数据已下载，正在刷新...');
       setTimeout(function(){ window.location.reload(); }, 800);
     }).catch(function(err){
