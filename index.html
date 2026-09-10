@@ -540,8 +540,10 @@
           </div>
           <div class="hours-input">
             <label>今日学习时长</label>
-            <input type="number" id="home-study-hours" min="0" max="16" step="0.5" value="0">
-            <span style="font-size:12px;color:var(--muted);">小时</span>
+            <input type="number" id="home-study-hours" min="0" max="16" step="1" value="0" style="width:50px;">
+            <span style="font-size:12px;color:var(--muted);">时</span>
+            <input type="number" id="home-study-mins" min="0" max="59" step="5" value="0" style="width:50px;">
+            <span style="font-size:12px;color:var(--muted);">分</span>
           </div>
         </div>
 
@@ -565,6 +567,8 @@
           <div class="collapse-body" id="home-review-body">
             <p style="font-size:12px;color:var(--muted);margin-bottom:8px;margin-top:4px;">今天学了什么？有什么收获和不足？</p>
             <textarea class="review-area" id="home-review-text" placeholder="例如：今天高数刷题效率不错，英语单词背了100个，下午有点困注意力不集中..."></textarea>
+            <p style="font-size:12px;color:var(--muted);margin:12px 0 6px;">💡 明日计划（保存后自动同步为明天的每日任务）</p>
+            <textarea class="review-area" id="home-tomorrow-plan" placeholder="每行一个任务，可用「科目：内容」格式，例如：&#10;数学：做2018年真题&#10;英语：背200个单词&#10;专业课：背诵第三章重点" style="min-height:80px;"></textarea>
             <button class="review-save" id="home-review-save">保存今日复盘</button>
           </div>
         </div>
@@ -1077,7 +1081,8 @@
   if (!state.dailyTasks) state.dailyTasks = {};
   if (!state.weeklyTasks) state.weeklyTasks = [];
   if (!state.monthlyTasks) state.monthlyTasks = {};
-  if (!state.checkin) state.checkin = { dates:[], moods:{}, hours:{}, reviews:{} };
+  if (!state.checkin) state.checkin = { dates:[], moods:{}, hours:{}, reviews:{}, tomorrowPlans:{} };
+  if (!state.checkin.tomorrowPlans) state.checkin.tomorrowPlans = {};
   if (!state.review) state.review = '';
   if (!state.timeline) state.timeline = [
     { id: 1, title: '考研预报名', date: '2026-09-24', desc: '登录研招网进行预报名，建议提前准备好相关材料', type: 'official' },
@@ -1107,7 +1112,8 @@
     if (!state.dailyTasks) state.dailyTasks = {};
     if (!state.weeklyTasks) state.weeklyTasks = [];
     if (!state.monthlyTasks) state.monthlyTasks = {};
-    if (!state.checkin) state.checkin = { dates:[], moods:{}, hours:{}, reviews:{} };
+    if (!state.checkin) state.checkin = { dates:[], moods:{}, hours:{}, reviews:{}, tomorrowPlans:{} };
+    if (!state.checkin.tomorrowPlans) state.checkin.tomorrowPlans = {};
     if (!state.review) state.review = '';
     if (!state.timeline) state.timeline = [
       { id: 1, title: '考研预报名', date: '2026-09-24', desc: '登录研招网进行预报名，建议提前准备好相关材料', type: 'official' },
@@ -1438,39 +1444,88 @@
   }
   setupMoodButtons('home-mood-row', 'home-study-hours');
 
-  /* 学习时长 */
-  function setupHoursInput(inputId){
-    var input = document.getElementById(inputId);
-    if (!input) return;
-    input.value = state.checkin.hours[todayKey()] || 0;
-    input.addEventListener('input', function(){
-      state.checkin.hours[todayKey()] = +input.value;
+  /* 学习时长（小时+分钟） */
+  function getTomorrowKey(){
+    var d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function setupHoursInput(){
+    var hoursInput = document.getElementById('home-study-hours');
+    var minsInput = document.getElementById('home-study-mins');
+    if (!hoursInput) return;
+    var stored = state.checkin.hours[todayKey()] || 0;
+    hoursInput.value = Math.floor(stored);
+    minsInput.value = Math.round((stored - Math.floor(stored)) * 60);
+    function syncHours(){
+      var h = parseInt(hoursInput.value) || 0;
+      var m = parseInt(minsInput.value) || 0;
+      var total = h + m / 60;
+      state.checkin.hours[todayKey()] = total;
       save();
       renderChart();
       updateStats();
       renderCalendar();
       renderReport();
-      // 同步其他时长输入
-      ['home-study-hours'].forEach(function(id){
-        var el = document.getElementById(id);
-        if (el && el !== input) el.value = input.value;
-      });
-    });
+    }
+    hoursInput.addEventListener('input', syncHours);
+    minsInput.addEventListener('input', syncHours);
   }
-  setupHoursInput('home-study-hours');
+  setupHoursInput();
 
-  /* 每日复盘（首页） */
+  /* 每日复盘（首页）+ 明日计划联动 */
   var homeReviewText = document.getElementById('home-review-text');
+  var homeTomorrowPlan = document.getElementById('home-tomorrow-plan');
   function renderHomeReview(){
     var today = todayKey();
     if (homeReviewText) homeReviewText.value = state.checkin.reviews[today] || '';
+    if (homeTomorrowPlan) homeTomorrowPlan.value = state.checkin.tomorrowPlans[today] || '';
   }
   renderHomeReview();
   document.getElementById('home-review-save').addEventListener('click', function(){
-    state.checkin.reviews[todayKey()] = homeReviewText.value;
+    var today = todayKey();
+    var tomorrow = getTomorrowKey();
+    // 保存复盘
+    state.checkin.reviews[today] = homeReviewText.value;
+    // 保存明日计划原文
+    var planText = homeTomorrowPlan ? homeTomorrowPlan.value : '';
+    state.checkin.tomorrowPlans[today] = planText;
+
+    // 将明日计划解析为明天的每日任务
+    if (planText.trim()) {
+      var lines = planText.trim().split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l; });
+      var validSubjects = ['数学','专业课','英语','政治','其他'];
+      var newTasks = [];
+      lines.forEach(function(line){
+        var subject = '其他';
+        var text = line;
+        // 匹配「科目：内容」或「科目:内容」格式
+        var match = line.match(/^(数学|专业课|英语|政治|其他)\s*[:：]\s*(.+)/);
+        if (match) {
+          subject = match[1];
+          text = match[2].trim();
+        } else {
+          // 也匹配数字序号开头的行，去掉序号
+          text = line.replace(/^\d+[.、\)）]\s*/, '');
+        }
+        if (text) newTasks.push({ subject: subject, text: text, done: false });
+      });
+
+      if (newTasks.length > 0) {
+        // 保留明天已有的任务（如果已手动添加过），追加新的
+        if (!state.dailyTasks[tomorrow]) state.dailyTasks[tomorrow] = [];
+        // 移除之前由明日计划同步过来的任务（标记为 _fromPlan）
+        state.dailyTasks[tomorrow] = state.dailyTasks[tomorrow].filter(function(t){ return !t._fromPlan; });
+        // 添加新的计划任务
+        newTasks.forEach(function(t){ t._fromPlan = true; state.dailyTasks[tomorrow].push(t); });
+      }
+    }
+
     save();
     renderReport();
-    toast('今日复盘已保存');
+    renderQuickTasks();
+    renderDailyTasks();
+    toast('复盘和明日计划已保存');
   });
 
   /* ===== 周复盘 ===== */
@@ -2356,14 +2411,15 @@
       mergedMonthly[k] = cloudMT.length > localMT.length ? cloudMT : localMT;
     });
 
-    // checkin: 合并日期、心情、时长、复盘（取各自更新的）
-    var localC = state.checkin || {dates:[],moods:{},hours:{},reviews:{}};
-    var cloudC = cloudData.checkin || {dates:[],moods:{},hours:{},reviews:{}};
+    // checkin: 合并日期、心情、时长、复盘、明日计划（取各自更新的）
+    var localC = state.checkin || {dates:[],moods:{},hours:{},reviews:{},tomorrowPlans:{}};
+    var cloudC = cloudData.checkin || {dates:[],moods:{},hours:{},reviews:{},tomorrowPlans:{}};
     var mergedDates = Array.from(new Set(localC.dates.concat(cloudC.dates)));
     var mergedMoods = {};
     var mergedHours = {};
     var mergedReviews = {};
-    var allDateKeys = new Set(Object.keys(localC.moods).concat(Object.keys(cloudC.moods), Object.keys(localC.hours), Object.keys(cloudC.hours), Object.keys(localC.reviews), Object.keys(cloudC.reviews)));
+    var mergedTomorrowPlans = {};
+    var allDateKeys = new Set(Object.keys(localC.moods).concat(Object.keys(cloudC.moods), Object.keys(localC.hours), Object.keys(cloudC.hours), Object.keys(localC.reviews), Object.keys(cloudC.reviews), Object.keys(localC.tomorrowPlans || {}), Object.keys(cloudC.tomorrowPlans || {})));
     allDateKeys.forEach(function(k){
       // 心情：取有值的一方，优先云端
       mergedMoods[k] = cloudC.moods[k] || localC.moods[k] || undefined;
@@ -2374,6 +2430,10 @@
       var lr = localC.reviews[k] || '';
       var cr = cloudC.reviews[k] || '';
       mergedReviews[k] = cr.length > lr.length ? cr : lr;
+      // 明日计划：取较长的一方
+      var lp = (localC.tomorrowPlans || {})[k] || '';
+      var cp = (cloudC.tomorrowPlans || {})[k] || '';
+      mergedTomorrowPlans[k] = cp.length > lp.length ? cp : lp;
     });
 
     // subjects: 取进度较大的一方
@@ -2390,7 +2450,7 @@
     state.dailyTasks = mergedDaily;
     state.weeklyTasks = mergedWeekly;
     state.monthlyTasks = mergedMonthly;
-    state.checkin = {dates:mergedDates, moods:mergedMoods, hours:mergedHours, reviews:mergedReviews};
+    state.checkin = {dates:mergedDates, moods:mergedMoods, hours:mergedHours, reviews:mergedReviews, tomorrowPlans:mergedTomorrowPlans};
     state.subjects = mergedSubjects;
     state.review = mergedReview;
     state._lastSync = Date.now();
