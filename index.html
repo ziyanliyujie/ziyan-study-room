@@ -1683,44 +1683,20 @@
     }
     lines.push('');
 
-    // 碎碎念
-    var murmur = (state.checkin.murmurs && state.checkin.murmurs[dateStr]) || '';
-    if (murmur.trim()) {
-      lines.push('💬碎碎念');
-      murmur.trim().split('\n').forEach(function(l){
-        if (l.trim()) lines.push(l.trim());
-      });
-      lines.push('');
-    }
-
     // 明日计划
     lines.push('💡明日计划');
     // 找明天的任务
     var tomorrow = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
     var tomorrowStr = tomorrow.getFullYear()+'-'+String(tomorrow.getMonth()+1).padStart(2,'0')+'-'+String(tomorrow.getDate()).padStart(2,'0');
     var tomorrowTasks = state.dailyTasks[tomorrowStr] || [];
-    // 也加上今天未完成的任务
-    var planTasks = tomorrowTasks.slice();
-    if (undoneTasks.length > 0) {
-      undoneTasks.forEach(function(t){
-        planTasks.push(t);
+    if (tomorrowTasks.length > 0) {
+      tomorrowTasks.forEach(function(t, i){
+        var taskLine = String.fromCharCode(0x2460 + i) + ' ' + t.subject + '：' + t.text;
+        if (t.est) taskLine += '（' + t.est + 'min）';
+        lines.push(taskLine);
       });
-    }
-    if (planTasks.length > 0) {
-      planTasks.forEach(function(t, i){
-        if (i < 3) {
-          var taskLine = String.fromCharCode(0x2460 + i) + ' ' + t.subject + '：' + t.text;
-          if (t.est) taskLine += '（' + t.est + 'min）';
-          lines.push(taskLine);
-        }
-      });
-      for (var k = planTasks.length; k < 3; k++) {
-        lines.push(String.fromCharCode(0x2460 + k));
-      }
     } else {
-      lines.push('①');
-      lines.push('②');
-      lines.push('③');
+      lines.push('（暂无明日计划）');
     }
 
     return lines.join('\n');
