@@ -243,6 +243,12 @@
     .hours-input{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}
     .hours-input label{font-size:12px;color:var(--muted)}
     .hours-input input{width:60px;padding:5px 8px;border:1px solid var(--rule);border-radius:6px;font-size:13px;text-align:center;background:var(--bg3);color:var(--ink)}
+    /* 碎碎念 */
+    .murmur-wrap{margin-top:10px}
+    .murmur-label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+    .murmur-input{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;font-size:13px;font-family:var(--font);line-height:1.6;resize:vertical;background:var(--bg3);color:var(--ink);transition:border-color .25s var(--ease-out);min-height:50px}
+    .murmur-input:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
+    .murmur-input::placeholder{color:var(--muted);font-size:12px}
 
     /* ===== 复盘 ===== */
     .review-area{width:100%;min-height:100px;padding:10px;border:1px solid var(--rule);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);color:var(--ink);background:var(--bg3);resize:vertical;line-height:1.7}
@@ -548,6 +554,10 @@
             <span style="font-size:12px;color:var(--muted);">时</span>
             <input type="number" id="home-study-mins" min="0" max="59" step="5" value="0" style="width:50px;">
             <span style="font-size:12px;color:var(--muted);">分</span>
+          </div>
+          <div class="murmur-wrap">
+            <label class="murmur-label">💬 碎碎念</label>
+            <textarea id="home-murmur" class="murmur-input" placeholder="记录此刻的想法、感受、碎碎念..." rows="2"></textarea>
           </div>
         </div>
 
@@ -1087,8 +1097,9 @@
   if (!state.dailyTasks) state.dailyTasks = {};
   if (!state.weeklyTasks) state.weeklyTasks = [];
   if (!state.monthlyTasks) state.monthlyTasks = {};
-  if (!state.checkin) state.checkin = { dates:[], moods:{}, hours:{}, reviews:{}, tomorrowPlans:{} };
+  if (!state.checkin) state.checkin = { dates:[], moods:{}, hours:{}, reviews:{}, tomorrowPlans:{}, murmurs:{} };
   if (!state.checkin.tomorrowPlans) state.checkin.tomorrowPlans = {};
+  if (!state.checkin.murmurs) state.checkin.murmurs = {};
   if (!state.review) state.review = '';
   if (!state.timeline) state.timeline = [
     { id: 1, title: '考研预报名', date: '2026-09-24', desc: '登录研招网进行预报名，建议提前准备好相关材料', type: 'official' },
@@ -1118,8 +1129,9 @@
     if (!state.dailyTasks) state.dailyTasks = {};
     if (!state.weeklyTasks) state.weeklyTasks = [];
     if (!state.monthlyTasks) state.monthlyTasks = {};
-    if (!state.checkin) state.checkin = { dates:[], moods:{}, hours:{}, reviews:{}, tomorrowPlans:{} };
+    if (!state.checkin) state.checkin = { dates:[], moods:{}, hours:{}, reviews:{}, tomorrowPlans:{}, murmurs:{} };
     if (!state.checkin.tomorrowPlans) state.checkin.tomorrowPlans = {};
+    if (!state.checkin.murmurs) state.checkin.murmurs = {};
     if (!state.review) state.review = '';
     if (!state.timeline) state.timeline = [
       { id: 1, title: '考研预报名', date: '2026-09-24', desc: '登录研招网进行预报名，建议提前准备好相关材料', type: 'official' },
@@ -1485,6 +1497,23 @@
   }
   setupHoursInput();
 
+  /* 碎碎念 */
+  var homeMurmur = document.getElementById('home-murmur');
+  function renderHomeMurmur(){
+    var today = todayKey();
+    if (homeMurmur) homeMurmur.value = (state.checkin.murmurs && state.checkin.murmurs[today]) || '';
+  }
+  renderHomeMurmur();
+  if (homeMurmur) {
+    homeMurmur.addEventListener('input', function(){
+      var today = todayKey();
+      if (!state.checkin.murmurs) state.checkin.murmurs = {};
+      state.checkin.murmurs[today] = homeMurmur.value;
+      save();
+      renderReport();
+    });
+  }
+
   /* 每日复盘（首页） */
   var homeReviewText = document.getElementById('home-review-text');
   function renderHomeReview(){
@@ -1653,6 +1682,16 @@
       lines.push('（暂无）');
     }
     lines.push('');
+
+    // 碎碎念
+    var murmur = (state.checkin.murmurs && state.checkin.murmurs[dateStr]) || '';
+    if (murmur.trim()) {
+      lines.push('💬碎碎念');
+      murmur.trim().split('\n').forEach(function(l){
+        if (l.trim()) lines.push(l.trim());
+      });
+      lines.push('');
+    }
 
     // 明日计划
     lines.push('💡明日计划');
@@ -2208,7 +2247,7 @@
           save();
           renderQuickTasks(); renderDailyTasks(); renderWeeklyTasks();
           renderMonthlyTasks(); renderSubjects(); renderTimeline(); renderCalendar();
-          renderReport(); renderHomeReview(); updateCheckinBtn(); updateStats(); renderChart();
+          renderReport(); renderHomeReview(); renderHomeMurmur(); updateCheckinBtn(); updateStats(); renderChart();
           reviewText.value = state.review || '';
           toast('导入成功');
         }
@@ -2378,15 +2417,16 @@
       mergedMonthly[k] = cloudMT.length > localMT.length ? cloudMT : localMT;
     });
 
-    // checkin: 合并日期、心情、时长、复盘、明日计划（取各自更新的）
-    var localC = state.checkin || {dates:[],moods:{},hours:{},reviews:{},tomorrowPlans:{}};
-    var cloudC = cloudData.checkin || {dates:[],moods:{},hours:{},reviews:{},tomorrowPlans:{}};
+    // checkin: 合并日期、心情、时长、复盘、明日计划、碎碎念（取各自更新的）
+    var localC = state.checkin || {dates:[],moods:{},hours:{},reviews:{},tomorrowPlans:{},murmurs:{}};
+    var cloudC = cloudData.checkin || {dates:[],moods:{},hours:{},reviews:{},tomorrowPlans:{},murmurs:{}};
     var mergedDates = Array.from(new Set(localC.dates.concat(cloudC.dates)));
     var mergedMoods = {};
     var mergedHours = {};
     var mergedReviews = {};
     var mergedTomorrowPlans = {};
-    var allDateKeys = new Set(Object.keys(localC.moods).concat(Object.keys(cloudC.moods), Object.keys(localC.hours), Object.keys(cloudC.hours), Object.keys(localC.reviews), Object.keys(cloudC.reviews), Object.keys(localC.tomorrowPlans || {}), Object.keys(cloudC.tomorrowPlans || {})));
+    var mergedMurmurs = {};
+    var allDateKeys = new Set(Object.keys(localC.moods).concat(Object.keys(cloudC.moods), Object.keys(localC.hours), Object.keys(cloudC.hours), Object.keys(localC.reviews), Object.keys(cloudC.reviews), Object.keys(localC.tomorrowPlans || {}), Object.keys(cloudC.tomorrowPlans || {}), Object.keys(localC.murmurs || {}), Object.keys(cloudC.murmurs || {})));
     allDateKeys.forEach(function(k){
       // 心情：取有值的一方，优先云端
       mergedMoods[k] = cloudC.moods[k] || localC.moods[k] || undefined;
@@ -2401,6 +2441,10 @@
       var lp = (localC.tomorrowPlans || {})[k] || '';
       var cp = (cloudC.tomorrowPlans || {})[k] || '';
       mergedTomorrowPlans[k] = cp.length > lp.length ? cp : lp;
+      // 碎碎念：取较长的一方
+      var lm = (localC.murmurs || {})[k] || '';
+      var cm = (cloudC.murmurs || {})[k] || '';
+      mergedMurmurs[k] = cm.length > lm.length ? cm : lm;
     });
 
     // subjects: 取进度较大的一方
@@ -2417,7 +2461,7 @@
     state.dailyTasks = mergedDaily;
     state.weeklyTasks = mergedWeekly;
     state.monthlyTasks = mergedMonthly;
-    state.checkin = {dates:mergedDates, moods:mergedMoods, hours:mergedHours, reviews:mergedReviews, tomorrowPlans:mergedTomorrowPlans};
+    state.checkin = {dates:mergedDates, moods:mergedMoods, hours:mergedHours, reviews:mergedReviews, tomorrowPlans:mergedTomorrowPlans, murmurs:mergedMurmurs};
     state.subjects = mergedSubjects;
     state.review = mergedReview;
     state._lastSync = Date.now();
