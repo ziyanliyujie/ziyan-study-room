@@ -132,9 +132,10 @@
     /* ===== 卡片 ===== */
     .card{background:var(--bg2);border:1px solid var(--rule);border-radius:var(--radius);padding:16px;transition:all .3s var(--ease-out);margin-bottom:12px;box-shadow:var(--shadow-sm)}
     .card:hover{box-shadow:var(--shadow-md);border-color:rgba(59,130,246,0.15);transform:translateY(-1px)}
-    .card-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;letter-spacing:-0.01em}
+    .card-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;letter-spacing:-0.01em;flex-wrap:wrap;gap:4px}
     .card-title span{display:flex;align-items:center;gap:6px}
     .card-title .tag{font-size:11px;padding:2px 10px;border-radius:20px;background:var(--accent-light);color:var(--accent2);font-weight:600;letter-spacing:0.02em}
+    .card-title-meta{display:flex;align-items:center;justify-content:flex-end;gap:8px;width:100%}
     .est-summary{font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap;flex-shrink:0}
     .est-summary .est-done{color:var(--success);font-weight:600}
 
@@ -565,7 +566,7 @@
 
         <!-- 今日任务 -->
         <div class="card">
-          <div class="card-title"><span>📋 今日任务</span><span class="est-summary" id="home-est-summary">⏱ 预计 0min</span><span class="tag" id="home-task-tag">0/0</span></div>
+          <div class="card-title"><span>📋 今日任务</span><div class="card-title-meta"><span class="est-summary" id="home-est-summary">⏱ 预计 0min</span><span class="tag" id="home-task-tag">0/0</span></div></div>
           <div class="task-input-row">
             <select id="home-quick-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
             <input type="text" id="home-quick-input" placeholder="快速添加今日任务...">
@@ -644,7 +645,7 @@
         <!-- 日计划 -->
         <div class="plan-content" id="plan-daily">
           <div class="card">
-            <div class="card-title"><span>📅 每日学习计划</span><span class="est-summary" id="daily-est-summary">⏱ 预计 0min</span><span class="tag" id="daily-tag">0/0 完成</span></div>
+            <div class="card-title"><span>📅 每日学习计划</span><div class="card-title-meta"><span class="est-summary" id="daily-est-summary">⏱ 预计 0min</span><span class="tag" id="daily-tag">0/0 完成</span></div></div>
             <div class="day-selector" id="day-selector"></div>
             <div class="task-input-row">
               <select id="task-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
