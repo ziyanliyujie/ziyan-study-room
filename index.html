@@ -135,6 +135,8 @@
     .card-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;letter-spacing:-0.01em}
     .card-title span{display:flex;align-items:center;gap:6px}
     .card-title .tag{font-size:11px;padding:2px 10px;border-radius:20px;background:var(--accent-light);color:var(--accent2);font-weight:600;letter-spacing:0.02em}
+    .est-summary{font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap;flex-shrink:0}
+    .est-summary .est-done{color:var(--success);font-weight:600}
 
     /* ===== 统计卡片 ===== */
     .stat-card{background:var(--bg2);border:1px solid var(--rule);border-radius:var(--radius);padding:14px;text-align:center;transition:all .3s var(--ease-out);position:relative;overflow:hidden;box-shadow:var(--shadow-sm)}
@@ -563,7 +565,7 @@
 
         <!-- 今日任务 -->
         <div class="card">
-          <div class="card-title"><span>📋 今日任务</span><span class="tag" id="home-task-tag">0/0</span></div>
+          <div class="card-title"><span>📋 今日任务</span><span class="est-summary" id="home-est-summary">⏱ 预计 0min</span><span class="tag" id="home-task-tag">0/0</span></div>
           <div class="task-input-row">
             <select id="home-quick-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
             <input type="text" id="home-quick-input" placeholder="快速添加今日任务...">
@@ -642,7 +644,7 @@
         <!-- 日计划 -->
         <div class="plan-content" id="plan-daily">
           <div class="card">
-            <div class="card-title"><span>📅 每日学习计划</span><span class="tag" id="daily-tag">0/0 完成</span></div>
+            <div class="card-title"><span>📅 每日学习计划</span><span class="est-summary" id="daily-est-summary">⏱ 预计 0min</span><span class="tag" id="daily-tag">0/0 完成</span></div>
             <div class="day-selector" id="day-selector"></div>
             <div class="task-input-row">
               <select id="task-subject"><option value="数学">数学</option><option value="专业课">专业课</option><option value="英语">英语</option><option value="政治">政治</option><option value="其他">其他</option></select>
@@ -1188,6 +1190,20 @@
     document.getElementById('week-hours-tag').textContent = total.toFixed(1)+'小时';
   }
 
+  /* ===== 通用：预估用时汇总 ===== */
+  function updateEstSummary(tasks, elId){
+    var el = document.getElementById(elId);
+    if (!el) return;
+    var totalEst = tasks.reduce(function(s,t){return s+(t.est||0)},0);
+    var doneEst = tasks.filter(function(t){return t.done}).reduce(function(s,t){return s+(t.est||0)},0);
+    if (totalEst > 0) {
+      el.style.display = '';
+      el.innerHTML = '⏱ 已完成<span class="est-done">'+doneEst+'min</span> / 共'+totalEst+'min';
+    } else {
+      el.style.display = 'none';
+    }
+  }
+
   /* ===== 通用：任务项HTML ===== */
   function taskItemHtml(t, idx, type){
     var estHtml = t.est ? '<span class="task-est">'+t.est+'min</span>' : '';
@@ -1223,6 +1239,7 @@
     list.innerHTML = tasks.map(function(t,i){ return taskItemHtml(t,i,'quick'); }).join('');
     var done = tasks.filter(function(t){return t.done}).length;
     document.getElementById('home-task-tag').textContent = done+'/'+tasks.length;
+    updateEstSummary(tasks, 'home-est-summary');
   }
   document.getElementById('home-quick-add').addEventListener('click', function(){
     var input = document.getElementById('home-quick-input');
@@ -1262,6 +1279,7 @@
     else { list.innerHTML = tasks.map(function(t,i){ return taskItemHtml(t,i,'daily'); }).join(''); }
     var done = tasks.filter(function(t){return t.done}).length;
     document.getElementById('daily-tag').textContent = done+'/'+tasks.length+' 完成';
+    updateEstSummary(tasks, 'daily-est-summary');
   }
   document.getElementById('task-add').addEventListener('click', function(){
     var input = document.getElementById('task-input');
