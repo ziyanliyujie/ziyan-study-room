@@ -625,6 +625,10 @@
                 <div class="report-section-title">📝 每日复盘</div>
                 <div class="report-review-box" id="report-review"><span class="report-empty">这一天没有写复盘</span></div>
               </div>
+              <div class="report-section">
+                <div class="report-section-title">💬 碎碎念</div>
+                <div class="report-review-box" id="report-murmur"><span class="report-empty">这一天没有写碎碎念</span></div>
+              </div>
               <div class="report-footer" id="report-footer">子言的考研空间 · 每日日报 · 2026/09/10 · 未打卡</div>
               <div class="report-share-bar">
                 <button class="share-btn" id="share-copy">📋 复制</button>
@@ -1639,6 +1643,14 @@
       document.getElementById('report-review').textContent = review;
     } else {
       document.getElementById('report-review').innerHTML = '<span class="report-empty">这一天没有写复盘</span>';
+    }
+
+    // 碎碎念
+    var murmur = (state.checkin.murmurs && state.checkin.murmurs[dateStr]) || '';
+    if (murmur.trim()) {
+      document.getElementById('report-murmur').textContent = murmur;
+    } else {
+      document.getElementById('report-murmur').innerHTML = '<span class="report-empty">这一天没有写碎碎念</span>';
     }
 
     // 页脚
