@@ -223,6 +223,17 @@
     .task-delete{font-size:14px;color:var(--danger);cursor:pointer;opacity:0.3;transition:opacity .2s;border:none;background:none;line-height:1}
     .task-delete:hover{opacity:1}
 
+    /* 任务编辑行 */
+    .task-edit-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:4px 0;animation:slideIn .25s var(--ease-out)}
+    .task-edit-row select,.task-edit-row input[type="text"],.task-edit-row input[type="number"]{padding:8px 10px;border:1px solid var(--accent2);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--ink);background:var(--bg2)}
+    .task-edit-row input[type="text"]:focus,.task-edit-row select:focus,.task-edit-row input[type="number"]:focus{outline:none;box-shadow:0 0 0 3px rgba(59,130,246,0.08)}
+    .task-edit-row input[type="text"]{flex:1;min-width:100px}
+    .task-edit-row select{width:68px;flex-shrink:0}
+    .task-edit-row .task-est-input{width:48px;flex-shrink:0;text-align:center}
+    .task-edit-btn{padding:7px 12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;flex-shrink:0}
+    .task-edit-btn.cancel{background:var(--bg3);color:var(--muted)}
+    .task-edit-hint{font-size:10px;color:var(--muted);width:100%;margin-top:2px}
+
     /* ===== 计划tab切换 ===== */
     .plan-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--bg3);border-radius:14px;padding:4px}
     .plan-tab{flex:1;padding:9px;text-align:center;font-size:14px;color:var(--muted);cursor:pointer;border-radius:10px;transition:all .25s var(--ease-out);font-weight:500}
@@ -1368,28 +1379,93 @@
   });
   document.getElementById('monthly-task-input').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('monthly-task-add').click(); });
 
-  /* ===== 任务勾选/删除 ===== */
+  /* ===== 任务勾选/删除/编辑 ===== */
+  // 内联编辑任务
+  function editTaskInline(taskItem, idx, type){
+    var key, tasks;
+    if (type === 'daily' || type === 'quick') { key = getDayKey(); tasks = state.dailyTasks[key]; }
+    else if (type === 'weekly') { tasks = state.weeklyTasks; }
+    else if (type === 'monthly') { key = getMonthKey(); tasks = state.monthlyTasks[key]; }
+    if (!tasks || !tasks[idx]) return;
+    var t = tasks[idx];
+    var subjects = state.subjects.map(function(s){return s.name;});
+    var opts = subjects.map(function(s){return '<option value="'+s+'"'+(s===t.subject?' selected':'')+'>'+s+'</option>';}).join('');
+    taskItem.innerHTML = '<div class="task-edit-row" style="width:100%">'
+      + '<select class="task-edit-subject">'+opts+'</select>'
+      + '<input type="text" class="task-edit-text" value="'+t.text.replace(/"/g,'&quot;')+'" placeholder="任务内容">'
+      + '<input type="number" class="task-edit-est task-est-input" value="'+(t.est||0)+'" min="0" step="15">'
+      + '<button class="task-edit-btn save" data-idx="'+idx+'" data-type="'+type+'">✓</button>'
+      + '<button class="task-edit-btn cancel" data-idx="'+idx+'" data-type="'+type+'">✕</button>'
+      + '<span class="task-edit-hint">编辑中… 回车保存，Esc取消</span>'
+      + '</div>';
+    var textInput = taskItem.querySelector('.task-edit-text');
+    if (textInput) { textInput.focus(); textInput.select(); }
+  }
+  function saveTaskEdit(idx, type, newText, newSubject, newEst){
+    var key, tasks;
+    if (type === 'daily' || type === 'quick') { key = getDayKey(); tasks = state.dailyTasks[key]; }
+    else if (type === 'weekly') { tasks = state.weeklyTasks; }
+    else if (type === 'monthly') { key = getMonthKey(); tasks = state.monthlyTasks[key]; }
+    if (!tasks || !tasks[idx]) return;
+    tasks[idx].text = newText.trim() || tasks[idx].text;
+    tasks[idx].subject = newSubject;
+    tasks[idx].est = parseInt(newEst) || 0;
+    save();
+    renderQuickTasks(); renderDailyTasks(); renderWeeklyTasks(); renderMonthlyTasks();
+    renderSubjects(); updateStats(); renderReport();
+    toast('任务已更新');
+  }
+
   document.addEventListener('click', function(e){
     // 点击整个任务项或勾选框都能切换完成状态
     var taskItem = e.target.closest('.task-item');
     var isDeleteBtn = e.target.classList.contains('task-delete');
+    var isEditBtn = e.target.classList.contains('task-edit-btn');
+    var isEditInput = e.target.closest('.task-edit-row');
+
+    // 编辑保存/取消
+    if (isEditBtn) {
+      var idx = +e.target.dataset.idx;
+      var type = e.target.dataset.type;
+      var row = e.target.closest('.task-edit-row');
+      if (e.target.classList.contains('save')) {
+        var newText = row.querySelector('.task-edit-text').value;
+        var newSubject = row.querySelector('.task-edit-subject').value;
+        var newEst = row.querySelector('.task-edit-est').value;
+        saveTaskEdit(idx, type, newText, newSubject, newEst);
+      } else {
+        renderQuickTasks(); renderDailyTasks(); renderWeeklyTasks(); renderMonthlyTasks();
+      }
+      return;
+    }
+    // 编辑行内点击不触发完成
+    if (isEditInput) return;
 
     if (taskItem && !isDeleteBtn) {
       var checkEl = taskItem.querySelector('.task-check');
       if (checkEl) {
         var idx = +checkEl.dataset.idx;
         var type = checkEl.dataset.type;
-        var key, tasks;
-        if (type === 'daily' || type === 'quick') { key = getDayKey(); tasks = state.dailyTasks[key]; }
-        else if (type === 'weekly') { tasks = state.weeklyTasks; }
-        else if (type === 'monthly') { key = getMonthKey(); tasks = state.monthlyTasks[key]; }
-        if (tasks) {
-          tasks[idx].done = !tasks[idx].done;
-          save();
-          renderQuickTasks(); renderDailyTasks(); renderWeeklyTasks(); renderMonthlyTasks();
-          renderSubjects(); updateStats(); renderReport();
-          toast(tasks[idx].done ? '✓ 任务完成' : '↩ 已撤回');
+        // 用定时器区分单击和双击：双击不触发切换
+        if (taskItem._dblTimer) {
+          clearTimeout(taskItem._dblTimer);
+          taskItem._dblTimer = null;
+          return; // 第二次点击，交给 dblclick 处理
         }
+        taskItem._dblTimer = setTimeout(function(){
+          taskItem._dblTimer = null;
+          var key, tasks;
+          if (type === 'daily' || type === 'quick') { key = getDayKey(); tasks = state.dailyTasks[key]; }
+          else if (type === 'weekly') { tasks = state.weeklyTasks; }
+          else if (type === 'monthly') { key = getMonthKey(); tasks = state.monthlyTasks[key]; }
+          if (tasks) {
+            tasks[idx].done = !tasks[idx].done;
+            save();
+            renderQuickTasks(); renderDailyTasks(); renderWeeklyTasks(); renderMonthlyTasks();
+            renderSubjects(); updateStats(); renderReport();
+            toast(tasks[idx].done ? '✓ 任务完成' : '↩ 已撤回');
+          }
+        }, 250);
       }
     }
     if (isDeleteBtn) {
@@ -1404,6 +1480,54 @@
       renderSubjects(); updateStats(); renderReport();
       toast('已删除');
     }
+  });
+
+  // 双击编辑
+  document.addEventListener('dblclick', function(e){
+    var taskItem = e.target.closest('.task-item');
+    if (!taskItem) return;
+    var checkEl = taskItem.querySelector('.task-check');
+    if (!checkEl) return;
+    var idx = +checkEl.dataset.idx;
+    var type = checkEl.dataset.type;
+    editTaskInline(taskItem, idx, type);
+  });
+
+  // 左滑编辑（触摸事件）
+  var touchStartX = 0, touchStartY = 0, touchTaskItem = null;
+  document.addEventListener('touchstart', function(e){
+    var taskItem = e.target.closest('.task-item');
+    if (!taskItem || taskItem.querySelector('.task-edit-row')) { touchTaskItem = null; return; }
+    touchTaskItem = taskItem;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    if (!touchTaskItem) return;
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    var dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 2) {
+      // 左滑
+      if (dx < 0) {
+        var checkEl = touchTaskItem.querySelector('.task-check');
+        if (checkEl) {
+          var idx = +checkEl.dataset.idx;
+          var type = checkEl.dataset.type;
+          editTaskInline(touchTaskItem, idx, type);
+        }
+      }
+    }
+    touchTaskItem = null;
+  }, {passive:true});
+
+  // 编辑行内键盘事件（回车保存，Esc取消）
+  document.addEventListener('keydown', function(e){
+    var row = e.target.closest('.task-edit-row');
+    if (!row) return;
+    var saveBtn = row.querySelector('.task-edit-btn.save');
+    var cancelBtn = row.querySelector('.task-edit-btn.cancel');
+    if (e.key === 'Enter' && saveBtn) { e.preventDefault(); saveBtn.click(); }
+    if (e.key === 'Escape' && cancelBtn) { e.preventDefault(); cancelBtn.click(); }
   });
 
   /* ===== 科目标卡（数据页） ===== */
