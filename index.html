@@ -619,7 +619,7 @@
                 </div>
               </div>
               <div class="report-stats-row">
-                <div class="report-stat"><div class="report-stat-num" id="report-hours">0.0h</div><div class="report-stat-label">学习时长</div></div>
+                <div class="report-stat" id="report-hours-stat" style="cursor:pointer;" title="点击补录学习时长"><div class="report-stat-num" id="report-hours">0.0h</div><div class="report-stat-label">学习时长 ✏️</div></div>
                 <div class="report-stat"><div class="report-stat-num" id="report-completion">0%</div><div class="report-stat-label">任务完成率</div></div>
                 <div class="report-stat"><div class="report-stat-num" id="report-streak">0</div><div class="report-stat-label">连续打卡</div></div>
               </div>
@@ -1782,6 +1782,38 @@
     var checkedIn = state.checkin.dates.includes(dateStr);
     document.getElementById('report-footer').innerHTML = '子言的考研空间 · 每日日报 · '+footerDate+(checkedIn?' · 已打卡 🔥':' · 未打卡');
   }
+
+  // 补录学习时长
+  document.getElementById('report-hours-stat').addEventListener('click', function(){
+    var d = getReportDate(reportOffset);
+    var dateStr = d.toISOString().slice(0,10);
+    var current = state.checkin.hours[dateStr] || 0;
+    var hours = Math.floor(current);
+    var minutes = Math.round((current - hours) * 60);
+    var input = prompt('补录 '+dateStr+' 的学习时长\n格式：小时.分钟（例如 5.34 表示5小时34分）', hours + '.' + String(minutes).padStart(2,'0'));
+    if (input === null) return;
+    var parts = input.split(/[.。:：]/);
+    var h = parseInt(parts[0]) || 0;
+    var m = parseInt(parts[1]) || 0;
+    var total = h + m / 60;
+    if (total < 0) { toast('时长不能为负'); return; }
+    state.checkin.hours[dateStr] = total;
+    // 如果有学习时长，自动算作已打卡
+    if (total > 0 && !state.checkin.dates.includes(dateStr)) {
+      state.checkin.dates.push(dateStr);
+      state.checkin.dates.sort();
+    }
+    // 如果时长为0且已打卡，取消打卡
+    if (total === 0) {
+      var idx = state.checkin.dates.indexOf(dateStr);
+      if (idx > -1) state.checkin.dates.splice(idx, 1);
+    }
+    save();
+    renderReport();
+    updateStats();
+    toast('已补录 '+h+'小时'+m+'分钟');
+  });
+
   document.getElementById('report-prev').addEventListener('click', function(){
     reportOffset--;
     renderReport();
