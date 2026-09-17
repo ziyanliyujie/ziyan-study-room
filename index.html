@@ -532,8 +532,9 @@
           <div class="checkin-streak-big" id="home-streak-num">0</div>
           <div class="checkin-streak-label">连续打卡天数</div>
           <button class="checkin-btn-big" id="home-checkin-btn">今日打卡</button>
-          <div style="margin-top:10px;font-size:12px;color:var(--muted);">
-            <span id="home-makeup-btn" style="cursor:pointer;text-decoration:underline;">补录昨日学习时长 →</span>
+          <div style="margin-top:14px;display:flex;justify-content:center;gap:16px;">
+            <span id="home-makeup-btn" style="font-size:13px;color:var(--accent2);cursor:pointer;font-weight:600;padding:8px 16px;background:var(--accent-light);border-radius:20px;">⏮ 补录昨日</span>
+            <span id="home-makeup-any-btn" style="font-size:13px;color:var(--muted);cursor:pointer;padding:8px 16px;background:var(--bg3);border-radius:20px;">📅 补录其他日期</span>
           </div>
         </div>
 
@@ -1646,6 +1647,36 @@
     save();
     renderCheckin(); updateStats(); renderReport();
     toast('已补录昨日 '+h+'小时'+m+'分钟');
+  });
+
+  /* 补录任意日期学习时长 */
+  document.getElementById('home-makeup-any-btn').addEventListener('click', function(){
+    var dateInput = prompt('请输入要补录的日期（格式：2026-09-16）', new Date().toISOString().slice(0,10));
+    if (!dateInput) return;
+    // 简单校验格式
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) { toast('日期格式不对哦'); return; }
+    var current = state.checkin.hours[dateInput] || 0;
+    var hours = Math.floor(current);
+    var minutes = Math.round((current - hours) * 60);
+    var input = prompt('补录 '+dateInput+' 的学习时长\n格式：小时.分钟（例如 5.34 表示5小时34分）', hours + '.' + String(minutes).padStart(2,'0'));
+    if (input === null) return;
+    var parts = input.split(/[.。:：]/);
+    var h = parseInt(parts[0]) || 0;
+    var m = parseInt(parts[1]) || 0;
+    var total = h + m / 60;
+    if (total < 0) { toast('时长不能为负'); return; }
+    state.checkin.hours[dateInput] = total;
+    if (total > 0 && !state.checkin.dates.includes(dateInput)) {
+      state.checkin.dates.push(dateInput);
+      state.checkin.dates.sort();
+    }
+    if (total === 0) {
+      var idx = state.checkin.dates.indexOf(dateInput);
+      if (idx > -1) state.checkin.dates.splice(idx, 1);
+    }
+    save();
+    renderCheckin(); updateStats(); renderReport();
+    toast('已补录 '+dateInput+' '+h+'小时'+m+'分钟');
   });
 
   /* 学习时长（小时+分钟） */
