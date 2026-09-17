@@ -532,6 +532,9 @@
           <div class="checkin-streak-big" id="home-streak-num">0</div>
           <div class="checkin-streak-label">连续打卡天数</div>
           <button class="checkin-btn-big" id="home-checkin-btn">今日打卡</button>
+          <div style="margin-top:10px;font-size:12px;color:var(--muted);">
+            <span id="home-makeup-btn" style="cursor:pointer;text-decoration:underline;">补录昨日学习时长 →</span>
+          </div>
         </div>
 
         <!-- 快捷入口 -->
@@ -1615,6 +1618,35 @@
     });
   }
   setupMoodButtons('home-mood-row', 'home-study-hours');
+
+  /* 补录昨日学习时长 */
+  document.getElementById('home-makeup-btn').addEventListener('click', function(){
+    var d = new Date();
+    d.setDate(d.getDate() - 1);
+    var dateStr = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    var current = state.checkin.hours[dateStr] || 0;
+    var hours = Math.floor(current);
+    var minutes = Math.round((current - hours) * 60);
+    var input = prompt('补录昨日（'+dateStr+'）的学习时长\n格式：小时.分钟（例如 5.34 表示5小时34分）', hours + '.' + String(minutes).padStart(2,'0'));
+    if (input === null) return;
+    var parts = input.split(/[.。:：]/);
+    var h = parseInt(parts[0]) || 0;
+    var m = parseInt(parts[1]) || 0;
+    var total = h + m / 60;
+    if (total < 0) { toast('时长不能为负'); return; }
+    state.checkin.hours[dateStr] = total;
+    if (total > 0 && !state.checkin.dates.includes(dateStr)) {
+      state.checkin.dates.push(dateStr);
+      state.checkin.dates.sort();
+    }
+    if (total === 0) {
+      var idx = state.checkin.dates.indexOf(dateStr);
+      if (idx > -1) state.checkin.dates.splice(idx, 1);
+    }
+    save();
+    renderCheckin(); updateStats(); renderReport();
+    toast('已补录昨日 '+h+'小时'+m+'分钟');
+  });
 
   /* 学习时长（小时+分钟） */
   function getTomorrowKey(){
