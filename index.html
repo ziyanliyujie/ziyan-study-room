@@ -1123,18 +1123,21 @@
   if (!state.checkin.tomorrowPlans) state.checkin.tomorrowPlans = {};
   if (!state.checkin.murmurs) state.checkin.murmurs = {};
   if (!state.review) state.review = '';
-  if (!state.timeline) state.timeline = [
-    { id: 1, title: '考研预报名', date: '2026-09-24', desc: '登录研招网进行预报名，建议提前准备好相关材料', type: 'official' },
-    { id: 2, title: '考研正式报名', date: '2026-10-05', desc: '正式报名阶段，务必核对报名信息无误', type: 'official' },
-    { id: 3, title: '网上确认', date: '2026-11-01', desc: '按报考点要求进行网上确认，上传照片和材料', type: 'official' },
-    { id: 4, title: '打印准考证', date: '2026-12-12', desc: '研招网下载并打印准考证，建议多打印几份备用', type: 'official' },
-    { id: 5, title: '考研初试 - 第一天', date: '2026-12-19', desc: '上午：政治 / 管理类综合  下午：英语', type: 'exam' },
-    { id: 6, title: '考研初试 - 第二天', date: '2026-12-20', desc: '上午：数学 / 业务课一  下午：专业课 / 业务课二', type: 'exam' },
-    { id: 7, title: '初试成绩公布', date: '2027-02-15', desc: '关注研招网和目标院校研究生院官网查分', type: 'official' },
-    { id: 8, title: '国家线公布', date: '2027-03-15', desc: '教育部公布考研国家线', type: 'official' },
-    { id: 9, title: '目标院校复试线公布', date: '2027-03-20', desc: '目标院校公布复试分数线', type: 'official' },
-    { id: 10, title: '考研复试', date: '2027-03-25', desc: '专业课笔试 + 综合面试 + 英语面试', type: 'exam' }
+  var TL_VERSION = 2;
+  if (!state.timeline || !state.timelineVer || state.timelineVer < TL_VERSION) state.timeline = [
+    { id: 1, title: '公布招生简章、考试大纲、参考书目', date: '2026-10-07', desc: '关注目标院校研究生院官网，了解最新招生信息', type: 'official' },
+    { id: 2, title: '考研预报名', date: '2026-10-10', desc: '登录研招网进行预报名，建议提前准备好相关材料（预计10.10-10.13）', type: 'official' },
+    { id: 3, title: '统考正式报名', date: '2026-10-16', desc: '正式报名阶段，务必核对报名信息无误（预计10.16-10.27）', type: 'official' },
+    { id: 4, title: '网上报名确认', date: '2026-10-31', desc: '按报考点要求进行网上确认，上传照片和材料（10月底-11月初）', type: 'official' },
+    { id: 5, title: '打印准考证', date: '2026-12-12', desc: '研招网下载并打印准考证，建议多打印几份备用（开考前一周左右）', type: 'official' },
+    { id: 6, title: '考研初试 - 第一天', date: '2026-12-19', desc: '上午：政治 / 管理类综合  下午：英语', type: 'exam' },
+    { id: 7, title: '考研初试 - 第二天', date: '2026-12-20', desc: '上午：数学 / 业务课一  下午：专业课 / 业务课二', type: 'exam' },
+    { id: 8, title: '初试成绩查询', date: '2027-02-20', desc: '关注研招网和目标院校研究生院官网查分（2月下旬）', type: 'official' },
+    { id: 9, title: '考研复试', date: '2027-03-25', desc: '专业课笔试 + 综合面试 + 英语面试（3月下旬）', type: 'exam' },
+    { id: 10, title: '调剂时间', date: '2027-04-01', desc: '关注研招网调剂系统，及时填报调剂志愿（4月初）', type: 'official' },
+    { id: 11, title: '发放录取通知书', date: '2027-07-01', desc: '坐等通知书到手！恭喜上岸！', type: 'official' }
   ];
+  state.timelineVer = TL_VERSION;
 
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show')},2000); }
@@ -1155,18 +1158,21 @@
     if (!state.checkin.tomorrowPlans) state.checkin.tomorrowPlans = {};
     if (!state.checkin.murmurs) state.checkin.murmurs = {};
     if (!state.review) state.review = '';
-    if (!state.timeline) state.timeline = [
-      { id: 1, title: '考研预报名', date: '2026-09-24', desc: '登录研招网进行预报名，建议提前准备好相关材料', type: 'official' },
-      { id: 2, title: '考研正式报名', date: '2026-10-05', desc: '正式报名阶段，务必核对报名信息无误', type: 'official' },
-      { id: 3, title: '网上确认', date: '2026-11-01', desc: '按报考点要求进行网上确认，上传照片和材料', type: 'official' },
-      { id: 4, title: '打印准考证', date: '2026-12-12', desc: '研招网下载并打印准考证，建议多打印几份备用', type: 'official' },
-      { id: 5, title: '考研初试 - 第一天', date: '2026-12-19', desc: '上午：政治 / 管理类综合  下午：英语', type: 'exam' },
-      { id: 6, title: '考研初试 - 第二天', date: '2026-12-20', desc: '上午：数学 / 业务课一  下午：专业课 / 业务课二', type: 'exam' },
-      { id: 7, title: '初试成绩公布', date: '2027-02-15', desc: '关注研招网和目标院校研究生院官网查分', type: 'official' },
-      { id: 8, title: '国家线公布', date: '2027-03-15', desc: '教育部公布考研国家线', type: 'official' },
-      { id: 9, title: '目标院校复试线公布', date: '2027-03-20', desc: '目标院校公布复试分数线', type: 'official' },
-      { id: 10, title: '考研复试', date: '2027-03-25', desc: '专业课笔试 + 综合面试 + 英语面试', type: 'exam' }
+    var TL_VER = 2;
+    if (!state.timeline || !state.timelineVer || state.timelineVer < TL_VER) state.timeline = [
+      { id: 1, title: '公布招生简章、考试大纲、参考书目', date: '2026-10-07', desc: '关注目标院校研究生院官网，了解最新招生信息', type: 'official' },
+      { id: 2, title: '考研预报名', date: '2026-10-10', desc: '登录研招网进行预报名，建议提前准备好相关材料（预计10.10-10.13）', type: 'official' },
+      { id: 3, title: '统考正式报名', date: '2026-10-16', desc: '正式报名阶段，务必核对报名信息无误（预计10.16-10.27）', type: 'official' },
+      { id: 4, title: '网上报名确认', date: '2026-10-31', desc: '按报考点要求进行网上确认，上传照片和材料（10月底-11月初）', type: 'official' },
+      { id: 5, title: '打印准考证', date: '2026-12-12', desc: '研招网下载并打印准考证，建议多打印几份备用（开考前一周左右）', type: 'official' },
+      { id: 6, title: '考研初试 - 第一天', date: '2026-12-19', desc: '上午：政治 / 管理类综合  下午：英语', type: 'exam' },
+      { id: 7, title: '考研初试 - 第二天', date: '2026-12-20', desc: '上午：数学 / 业务课一  下午：专业课 / 业务课二', type: 'exam' },
+      { id: 8, title: '初试成绩查询', date: '2027-02-20', desc: '关注研招网和目标院校研究生院官网查分（2月下旬）', type: 'official' },
+      { id: 9, title: '考研复试', date: '2027-03-25', desc: '专业课笔试 + 综合面试 + 英语面试（3月下旬）', type: 'exam' },
+      { id: 10, title: '调剂时间', date: '2027-04-01', desc: '关注研招网调剂系统，及时填报调剂志愿（4月初）', type: 'official' },
+      { id: 11, title: '发放录取通知书', date: '2027-07-01', desc: '坐等通知书到手！恭喜上岸！', type: 'official' }
     ];
+    state.timelineVer = TL_VER;
   }
 
   /* ===== 考研倒计时 ===== */
