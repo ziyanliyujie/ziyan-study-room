@@ -2404,6 +2404,52 @@
     }
     insights.push({ icon:'⚠️', title:'计划合理性评估', text:planText, level:planLevel });
 
+    // 6. 情绪关联分析（心情 × 学习时长）
+    var moodHours = {}; // { mood: { total: 0, count: 0 } }
+    var moodOrder = ['精力充沛', '状态不错', '一般', '有些疲惫'];
+    for (var i = 0; i < 30; i++) {
+      var d = new Date(today); d.setDate(d.getDate() - i);
+      var dk = d.toISOString().slice(0,10);
+      var mood = state.checkin.moods[dk];
+      var hours = state.checkin.hours[dk] || 0;
+      if (mood && hours > 0) {
+        if (!moodHours[mood]) moodHours[mood] = { total: 0, count: 0 };
+        moodHours[mood].total += hours;
+        moodHours[mood].count++;
+      }
+    }
+    var moodText = '', moodLevel = 'info';
+    var moodEntries = Object.keys(moodHours);
+    if (moodEntries.length === 0) {
+      moodText = '还没有足够的心情记录来分析哦～坚持每天记录心情，一段时间后就能看到心情和学习效率的奇妙关联啦！';
+      moodLevel = 'info';
+    } else {
+      // 找出效率最高和最低的心情
+      var bestMood = '', bestAvg = 0;
+      var worstMood = '', worstAvg = 999;
+      for (var m in moodHours) {
+        var avg = moodHours[m].total / moodHours[m].count;
+        if (avg > bestAvg) { bestAvg = avg; bestMood = m; }
+        if (avg < worstAvg) { worstAvg = avg; worstMood = m; }
+      }
+      var diff = bestAvg - worstAvg;
+      var diffPct = worstAvg > 0 ? Math.round(diff / worstAvg * 100) : 0;
+      if (moodEntries.length === 1) {
+        moodText = '最近30天主要都是"' + bestMood + '"的状态，日均学习' + bestAvg.toFixed(1) + '小时。情绪状态比较稳定，继续保持哦～';
+        moodLevel = 'good';
+      } else if (diff >= 2) {
+        moodText = '你的学习效率和心情关系好大！"' + bestMood + '"的时候日均能学' + bestAvg.toFixed(1) + '小时，而"' + worstMood + '"的时候只有' + worstAvg.toFixed(1) + '小时，差了' + diff.toFixed(1) + '小时（约' + diffPct + '%）。照顾好自己的情绪，就是最高效的学习方法呀💜';
+        moodLevel = 'warn';
+      } else if (diff >= 1) {
+        moodText = '心情对你的学习有一定影响。"' + bestMood + '"的时候日均学习' + bestAvg.toFixed(1) + '小时，"' + worstMood + '"的时候是' + worstAvg.toFixed(1) + '小时。状态不好的时候也别苛责自己，慢一点也没关系～';
+        moodLevel = 'info';
+      } else {
+        moodText = '你的学习状态很稳定！不管心情如何，日均学习时长都在' + worstAvg.toFixed(1) + '-' + bestAvg.toFixed(1) + '小时之间，情绪波动不太影响你的执行力，超棒的✨';
+        moodLevel = 'good';
+      }
+    }
+    insights.push({ icon:'💭', title:'情绪关联分析', text:moodText, level:moodLevel });
+
     // 生成具体建议
     var adviceList = [];
     if (recentAvg < 3) {
@@ -2420,6 +2466,13 @@
     }
     if (avgSubjectProgress >= 0.7 && examDaysLeft > 30) {
       adviceList.push('进度不错！可以开始安排每周1-2次模拟考试，检验学习效果。');
+    }
+    // 情绪相关建议
+    if (moodEntries.length >= 2 && diff >= 2) {
+      adviceList.push('情绪低落的时候别硬扛，做点让自己开心的小事充充电，状态回来后效率会翻倍的～');
+    }
+    if (moodEntries.length > 0 && worstMood === '有些疲惫') {
+      adviceList.push('疲惫的时候学习效率会大打折扣，不如好好休息，第二天满血复活再出发。');
     }
     if (adviceList.length === 0) {
       adviceList.push('你的学习状态很好，继续保持当前的节奏，坚持就是胜利！');
@@ -2887,7 +2940,7 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  var SW_VERSION = 'v17';
+  var SW_VERSION = 'v18';
   var LAST_SW = localStorage.getItem('sw_version') || '';
 
   if (LAST_SW !== SW_VERSION) {
@@ -2903,12 +2956,12 @@ if ('serviceWorker' in navigator) {
     }).then(function() {
       localStorage.setItem('sw_version', SW_VERSION);
       // 注册新 SW
-      navigator.serviceWorker.register('sw.js?v=17').catch(function(){});
+      navigator.serviceWorker.register('sw.js?v=18').catch(function(){});
       window.location.reload();
     }).catch(function(){});
   } else {
     // 版本相同：正常注册
-    navigator.serviceWorker.register('sw.js?v=17').then(function(reg) {
+    navigator.serviceWorker.register('sw.js?v=18').then(function(reg) {
       reg.addEventListener('updatefound', function() {
         var newWorker = reg.installing;
         if (newWorker) {
