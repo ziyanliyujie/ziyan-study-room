@@ -1118,6 +1118,23 @@
   }
   if (!state.dailyTasks) state.dailyTasks = {};
   if (!state.weeklyTasks) state.weeklyTasks = [];
+  if (!state.weeklyHistory) state.weeklyHistory = {};
+  // 周计划：新的一周自动重置，上周的任务归档到 weeklyHistory
+  function getWeekId(d){
+    d = d || new Date();
+    var year = d.getFullYear();
+    var onejan = new Date(year,0,1);
+    var week = Math.ceil((((d - onejan) / 86400000) + onejan.getDay()+1)/7);
+    return year + '-W' + String(week).padStart(2,'0');
+  }
+  var currentWeek = getWeekId();
+  if (state.currentWeek && state.currentWeek !== currentWeek && state.weeklyTasks.length > 0) {
+    // 新的一周，归档上周任务
+    state.weeklyHistory[state.currentWeek] = state.weeklyTasks.slice();
+    state.weeklyTasks = [];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+  state.currentWeek = currentWeek;
   if (!state.monthlyTasks) state.monthlyTasks = {};
   if (!state.checkin) state.checkin = { dates:[], moods:{}, hours:{}, reviews:{}, tomorrowPlans:{}, murmurs:{} };
   if (!state.checkin.tomorrowPlans) state.checkin.tomorrowPlans = {};
@@ -1153,6 +1170,14 @@
     }
     if (!state.dailyTasks) state.dailyTasks = {};
     if (!state.weeklyTasks) state.weeklyTasks = [];
+    if (!state.weeklyHistory) state.weeklyHistory = {};
+    // 周计划：新的一周自动重置
+    var cw = getWeekId();
+    if (state.currentWeek && state.currentWeek !== cw && state.weeklyTasks.length > 0) {
+      state.weeklyHistory[state.currentWeek] = state.weeklyTasks.slice();
+      state.weeklyTasks = [];
+    }
+    state.currentWeek = cw;
     if (!state.monthlyTasks) state.monthlyTasks = {};
     if (!state.checkin) state.checkin = { dates:[], moods:{}, hours:{}, reviews:{}, tomorrowPlans:{}, murmurs:{} };
     if (!state.checkin.tomorrowPlans) state.checkin.tomorrowPlans = {};
@@ -2860,7 +2885,7 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  var SW_VERSION = 'v15';
+  var SW_VERSION = 'v16';
   var LAST_SW = localStorage.getItem('sw_version') || '';
 
   if (LAST_SW !== SW_VERSION) {
@@ -2876,12 +2901,12 @@ if ('serviceWorker' in navigator) {
     }).then(function() {
       localStorage.setItem('sw_version', SW_VERSION);
       // 注册新 SW
-      navigator.serviceWorker.register('sw.js?v=15').catch(function(){});
+      navigator.serviceWorker.register('sw.js?v=16').catch(function(){});
       window.location.reload();
     }).catch(function(){});
   } else {
     // 版本相同：正常注册
-    navigator.serviceWorker.register('sw.js?v=15').then(function(reg) {
+    navigator.serviceWorker.register('sw.js?v=16').then(function(reg) {
       reg.addEventListener('updatefound', function() {
         var newWorker = reg.installing;
         if (newWorker) {
