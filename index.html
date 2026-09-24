@@ -1142,11 +1142,11 @@
   if (!state.checkin.tomorrowPlans) state.checkin.tomorrowPlans = {};
   if (!state.checkin.murmurs) state.checkin.murmurs = {};
   if (!state.review) state.review = '';
-  var TL_VERSION = 2;
+  var TL_VERSION = 3;
   if (!state.timeline || !state.timelineVer || state.timelineVer < TL_VERSION) state.timeline = [
     { id: 1, title: '公布招生简章、考试大纲、参考书目', date: '2026-10-07', desc: '关注目标院校研究生院官网，了解最新招生信息', type: 'official' },
-    { id: 2, title: '考研预报名', date: '2026-10-10', desc: '登录研招网进行预报名，建议提前准备好相关材料（预计10.10-10.13）', type: 'official' },
-    { id: 3, title: '统考正式报名', date: '2026-10-16', desc: '正式报名阶段，务必核对报名信息无误（预计10.16-10.27）', type: 'official' },
+    { id: 2, title: '考研预报名', date: '2026-10-09', desc: '登录研招网进行预报名，每日9:00-22:00（10.09-10.12）', type: 'official' },
+    { id: 3, title: '统考正式报名', date: '2026-10-15', desc: '正式报名阶段，务必核对报名信息无误，每日9:00-22:00（10.15-10.24）', type: 'official' },
     { id: 4, title: '网上报名确认', date: '2026-10-31', desc: '按报考点要求进行网上确认，上传照片和材料（10月底-11月初）', type: 'official' },
     { id: 5, title: '打印准考证', date: '2026-12-12', desc: '研招网下载并打印准考证，建议多打印几份备用（开考前一周左右）', type: 'official' },
     { id: 6, title: '考研初试 - 第一天', date: '2026-12-19', desc: '上午：政治 / 管理类综合  下午：英语', type: 'exam' },
@@ -1185,11 +1185,11 @@
     if (!state.checkin.tomorrowPlans) state.checkin.tomorrowPlans = {};
     if (!state.checkin.murmurs) state.checkin.murmurs = {};
     if (!state.review) state.review = '';
-    var TL_VER = 2;
+    var TL_VER = 3;
     if (!state.timeline || !state.timelineVer || state.timelineVer < TL_VER) state.timeline = [
       { id: 1, title: '公布招生简章、考试大纲、参考书目', date: '2026-10-07', desc: '关注目标院校研究生院官网，了解最新招生信息', type: 'official' },
-      { id: 2, title: '考研预报名', date: '2026-10-10', desc: '登录研招网进行预报名，建议提前准备好相关材料（预计10.10-10.13）', type: 'official' },
-      { id: 3, title: '统考正式报名', date: '2026-10-16', desc: '正式报名阶段，务必核对报名信息无误（预计10.16-10.27）', type: 'official' },
+      { id: 2, title: '考研预报名', date: '2026-10-09', desc: '登录研招网进行预报名，每日9:00-22:00（10.09-10.12）', type: 'official' },
+      { id: 3, title: '统考正式报名', date: '2026-10-15', desc: '正式报名阶段，务必核对报名信息无误，每日9:00-22:00（10.15-10.24）', type: 'official' },
       { id: 4, title: '网上报名确认', date: '2026-10-31', desc: '按报考点要求进行网上确认，上传照片和材料（10月底-11月初）', type: 'official' },
       { id: 5, title: '打印准考证', date: '2026-12-12', desc: '研招网下载并打印准考证，建议多打印几份备用（开考前一周左右）', type: 'official' },
       { id: 6, title: '考研初试 - 第一天', date: '2026-12-19', desc: '上午：政治 / 管理类综合  下午：英语', type: 'exam' },
@@ -2940,7 +2940,7 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  var SW_VERSION = 'v18';
+  var SW_VERSION = 'v19';
   var LAST_SW = localStorage.getItem('sw_version') || '';
 
   if (LAST_SW !== SW_VERSION) {
@@ -2956,12 +2956,12 @@ if ('serviceWorker' in navigator) {
     }).then(function() {
       localStorage.setItem('sw_version', SW_VERSION);
       // 注册新 SW
-      navigator.serviceWorker.register('sw.js?v=18').catch(function(){});
+      navigator.serviceWorker.register('sw.js?v=19').catch(function(){});
       window.location.reload();
     }).catch(function(){});
   } else {
     // 版本相同：正常注册
-    navigator.serviceWorker.register('sw.js?v=18').then(function(reg) {
+    navigator.serviceWorker.register('sw.js?v=19').then(function(reg) {
       reg.addEventListener('updatefound', function() {
         var newWorker = reg.installing;
         if (newWorker) {
